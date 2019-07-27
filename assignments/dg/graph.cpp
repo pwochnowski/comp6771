@@ -4,16 +4,16 @@ gdwg::Graph<N,E>::Graph() {
 
 }
 
-// template<typename N, typename E>
-// gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator start,
-//     typename std::vector<N>::const_iterator end) {
+template<typename N, typename E>
+gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator start,
+    typename std::vector<N>::const_iterator end) {
 
-//   std::vector<std::shared_ptr<N> > copies;
-//   while (start != end) {
-//     this->InsertNode(*start);
-//     start++;
-//   }
-// }
+  std::vector<std::shared_ptr<N> > copies;
+  while (start != end) {
+    this->InsertNode(*start);
+    start++;
+  }
+}
 
 // template<typename N, typename E>
 // gdwg::Graph<N, E>::Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator start,
@@ -66,4 +66,69 @@ std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& g) {
     out << i.first<< " (\n" << i.second << ")\n";
   }
   return out;
+}
+
+template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
+  if (this->g.cbegin() != this->g.cend()) {
+    return {this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
+  }
+  return {this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
+  // TODO: figure out why line below break
+  // return {this->g.cend(), this->g.cend(), {}};
+}
+
+template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const {
+   typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outerEnd = this->g.cend();
+  return {outerEnd, outerEnd, {}};
+}
+
+template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::operator++() {
+  ++inner_;
+  if (inner_ == outer_->second.cend()) {
+    ++outer_;
+    if (outer_ != sentinel_) {
+      inner_ = outer_->second.cbegin();
+    }
+  }
+  return *this;
+}
+
+template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator::reference gdwg::Graph<N, E>::const_iterator::operator*() const {
+  auto neighbor = *inner_;
+  return {*(outer_->first.ptr_), std::get<0>(neighbor), std::get<1>(neighbor)};
+}
+
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cbegin() const {
+  // What if the first element is empty?
+  if (this->list.cbegin() != this->list.cend()) {
+    return {this->list.cbegin(), this->list.cend(), this->list.cbegin()->second.cbegin()};
+  }
+  return cend();
+}
+
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cend() const {
+  return {this->list.cend(), this->list.cend(), {}};
+}
+
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::const_iterator::operator++() {
+   ++inner_;
+  if (inner_ == outer_->second.cend()) {
+    ++outer_;
+    if (outer_ != sentinel_) {
+      inner_ = outer_->second.cbegin();
+    }
+  }
+  return *this;
+}
+
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator::reference gdwg::AdjacencyList<N, E>::const_iterator::operator*() const {
+  return {*(outer_->first.ptr_), *(inner_->ptr_)};
 }

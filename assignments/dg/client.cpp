@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <tuple>
 
 #include "assignments/dg/graph.h"
 // #include "graph.hpp"
@@ -23,6 +24,12 @@ int main() {
   g.InsertEdge("are", "you?", 3);
 
   std::cout << g << '\n';
+  decltype(g)::const_iterator it = g.cbegin();
+  auto val = *it;
+  std::cout << std::get<0>(val) << " " << std::get<1>(val)<< " " << std::get<2>(val) << "\n";
+  it++;
+  // auto v2 = *it;
+  // std::cout << std::get<0>(v2) << " " << std::get<1>(v2)<< " " << std::get<2>(v2) << "\n";
 
   // gdwg::Graph<std::string, int> g2{g};
 

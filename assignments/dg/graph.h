@@ -2,6 +2,7 @@
 #define ASSIGNMENTS_DG_GRAPH_H_
 
 #include<memory>
+#include <vector>
 #include<map>
 #include<set>
 #include<utility>
@@ -17,26 +18,59 @@ namespace gdwg {
     bool operator < (const shared_pointer_store<T>& r) const {
         return *ptr_ < *r.ptr_;
     }
+    const T& operator*() {
+      return *ptr_;
+    }
     std::shared_ptr<T> ptr_;
   };
 
-  // template<typename B>
-  // struct unique_pointer_store {
-  //   unique_pointer_store(const B& entry) {
-  //     this->ptr_ = std::unique_ptr<B>(new B(entry));
-  //   }
+  template<typename B>
+  struct unique_pointer_store {
+    unique_pointer_store(const std::unique_ptr<B>& ptr) : ptr_(ptr) {}
+    unique_pointer_store(const B& entry) : ptr_(std::make_unique<B>(entry)) {}
 
-  //   bool operator < (const unique_pointer_store<B>& r) const {
-  //       return *ptr_ < *r.ptr_;
-  //   }
-  //   std::unique_ptr<B> ptr_;
-  // };
+    bool operator < (const unique_pointer_store<B>& r) const {
+        return *ptr_ < *r.ptr_;
+    }
+    std::unique_ptr<B> ptr_;
+  };
 
   template<typename N, typename E>
   class AdjacencyList {
     public:
       AdjacencyList() : list() {};
       ~AdjacencyList() {};
+
+      class const_iterator {
+        public:
+          using iterator_category = std::bidirectional_iterator_tag;
+          using value_type = std::tuple<N, E>;
+          using reference = std::tuple<const N&,const E&>;
+          using pointer = std::tuple<N, E>*;
+          using difference_type = int;
+
+          reference operator*() const;
+          const_iterator& operator++();
+          const_iterator operator++(int) {
+            auto copy{*this};
+            ++(*this);
+            return copy;
+          }
+          // This one isn't strictly required, but it's nice to have.
+          pointer operator->() const { return &(operator*()); }
+
+          friend bool operator==(const const_iterator& lhs, const const_iterator& rhs);
+          friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) { return !(lhs == rhs); }
+
+        private:
+          typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator outer_;
+          const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator sentinel_;
+          typename std::set<shared_pointer_store<E>>::const_iterator inner_;
+
+          friend class AdjacencyList<N, E>;
+          const_iterator(const decltype(outer_)& outer, const decltype(sentinel_)& sentinel, const decltype(inner_)& inner)
+              : outer_{outer}, sentinel_{sentinel}, inner_{inner} {}
+      };
 
 
       void addEdge(const shared_pointer_store<N>&, const E&);
@@ -49,6 +83,8 @@ namespace gdwg {
         }
         return out;
       }
+      const_iterator cbegin() const;
+      const_iterator cend() const;
     private:
       std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > > list;
   };
@@ -56,11 +92,49 @@ namespace gdwg {
   template <typename N, typename E>
   class Graph {
     public:
-      class const_iterator {};
+      class const_iterator {
+        public:
+          using iterator_category = std::bidirectional_iterator_tag;
+          using value_type = std::tuple<N, N, E>;
+          using reference = std::tuple<const N&,const N&,const E&>;
+          using pointer = std::tuple<N, N, E>*;
+          using difference_type = int;
+
+          reference operator*() const;
+          const_iterator& operator++();
+          const_iterator operator++(int) {
+            auto copy{*this};
+            ++(*this);
+            return copy;
+          }
+          const_iterator(
+              const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outer,
+              const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator sentinel,
+              const typename AdjacencyList<N, E>::const_iterator inner)
+              : outer_{outer}, sentinel_{sentinel}, inner_{inner} {}
+
+          // This one isn't strictly required, but it's nice to have.
+          pointer operator->() const { return &(operator*()); }
+
+          friend bool operator==(const const_iterator& lhs, const const_iterator& rhs);
+          friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) { return !(lhs == rhs); }
+
+        private:
+          typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outer_;
+          const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator sentinel_;
+          typename AdjacencyList<N, E>::const_iterator inner_;
+
+          friend class Graph<N, E>;
+
+      };
+
+      const_iterator cbegin() const;
+      const_iterator cend() const;
+
       Graph();
-      // Graph(typename std::vector<N>::const_iterator,typename std::vector<N>::const_iterator);
-      // Graph<N, E>(typename std::vector<std::tuple<N, N, E>>::const_iterator,
-      //     typename std::vector<std::tuple<N, N, E>>::const_iterator);
+      Graph(typename std::vector<N>::const_iterator,typename std::vector<N>::const_iterator);
+      Graph<N, E>(typename std::vector<std::tuple<N, N, E>>::const_iterator,
+          typename std::vector<std::tuple<N, N, E>>::const_iterator);
 
       bool InsertNode(const N&);
       bool InsertEdge(const N&, const N&, const E&);
