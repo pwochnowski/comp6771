@@ -24,16 +24,16 @@ namespace gdwg {
     std::shared_ptr<T> ptr_;
   };
 
-  template<typename B>
-  struct unique_pointer_store {
-    unique_pointer_store(const std::unique_ptr<B>& ptr) : ptr_(ptr) {}
-    unique_pointer_store(const B& entry) : ptr_(std::make_unique<B>(entry)) {}
+  // template<typename B>
+  // struct unique_pointer_store {
+  //   unique_pointer_store(const std::unique_ptr<B>& ptr) : ptr_(ptr) {}
+  //   unique_pointer_store(const B& entry) : ptr_(std::make_unique<B>(entry)) {}
 
-    bool operator < (const unique_pointer_store<B>& r) const {
-        return *ptr_ < *r.ptr_;
-    }
-    std::unique_ptr<B> ptr_;
-  };
+  //   bool operator < (const unique_pointer_store<B>& r) const {
+  //       return *ptr_ < *r.ptr_;
+  //   }
+  //   std::unique_ptr<B> ptr_;
+  // };
 
   template<typename N, typename E>
   class AdjacencyList {
@@ -49,6 +49,13 @@ namespace gdwg {
           using pointer = std::tuple<N, E>*;
           using difference_type = int;
 
+          const_iterator& operator=(const const_iterator& it) {
+            this->outer_ = it.outer_;
+            this->sentinel_ = it.sentinel_;
+            this->inner_ = it.inner_;
+            return *this;
+          }
+
           reference operator*() const;
           const_iterator& operator++();
           const_iterator operator++(int) {
@@ -59,17 +66,23 @@ namespace gdwg {
           // This one isn't strictly required, but it's nice to have.
           pointer operator->() const { return &(operator*()); }
 
-          friend bool operator==(const const_iterator& lhs, const const_iterator& rhs);
+          friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
+            return (lhs.outer_ == rhs.outer_ && (lhs.outer_ == rhs.sentinel_ || lhs.inner_ == rhs.inner_));
+          }
           friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) { return !(lhs == rhs); }
+
 
         private:
           typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator outer_;
-          const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator sentinel_;
-          typename std::set<shared_pointer_store<E>>::const_iterator inner_;
+          typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator sentinel_;
+          typename std::set<shared_pointer_store<E> >::const_iterator inner_;
+          const_iterator(
+              const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& outer,
+              const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& sentinel,
+              const typename std::set<shared_pointer_store<E> >::const_iterator& inner
+           ) : outer_{outer}, sentinel_{sentinel}, inner_{inner} {}
 
           friend class AdjacencyList<N, E>;
-          const_iterator(const decltype(outer_)& outer, const decltype(sentinel_)& sentinel, const decltype(inner_)& inner)
-              : outer_{outer}, sentinel_{sentinel}, inner_{inner} {}
       };
 
 
@@ -100,6 +113,10 @@ namespace gdwg {
           using pointer = std::tuple<N, N, E>*;
           using difference_type = int;
 
+          const_iterator& operator=(const const_iterator& it) {
+            return const_iterator(it.outer_, it.sentinel_, it.inner_);
+          }
+
           reference operator*() const;
           const_iterator& operator++();
           const_iterator operator++(int) {
@@ -107,11 +124,11 @@ namespace gdwg {
             ++(*this);
             return copy;
           }
-          const_iterator(
-              const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outer,
-              const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator sentinel,
-              const typename AdjacencyList<N, E>::const_iterator inner)
-              : outer_{outer}, sentinel_{sentinel}, inner_{inner} {}
+
+          // const_iterator(
+          //     const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outer,
+          //     const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator sentinel
+          // ) : outer_{outer}, sentinel_{sentinel}, inner_{} {}
 
           // This one isn't strictly required, but it's nice to have.
           pointer operator->() const { return &(operator*()); }
@@ -125,6 +142,9 @@ namespace gdwg {
           typename AdjacencyList<N, E>::const_iterator inner_;
 
           friend class Graph<N, E>;
+          const_iterator(const decltype(outer_)& outer, const decltype(sentinel_)& sentinel, const decltype(inner_)& inner)
+              : outer_{outer}, sentinel_{sentinel}, inner_{inner} {}
+
 
       };
 

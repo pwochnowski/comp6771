@@ -73,8 +73,9 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   if (this->g.cbegin() != this->g.cend()) {
     return {this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
   }
+  // Crashes when called on empty graph
+  // TODO: fix by writing a default constructor for AdjacencyList::const_iterator
   return {this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
-  // TODO: figure out why line below break
   // return {this->g.cend(), this->g.cend(), {}};
 }
 
