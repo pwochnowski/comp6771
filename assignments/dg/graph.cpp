@@ -1,25 +1,31 @@
-
+#include<iostream>
+#include<algorithm>
 template<typename N, typename E>
 gdwg::Graph<N,E>::Graph() {
 
 }
 
 template<typename N, typename E>
-gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator start,
-    typename std::vector<N>::const_iterator end) {
-
-  std::vector<std::shared_ptr<N> > copies;
+gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator& start,
+    typename std::vector<N>::const_iterator& end) {
   while (start != end) {
     this->InsertNode(*start);
     start++;
   }
 }
 
-// template<typename N, typename E>
-// gdwg::Graph<N, E>::Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator start,
-//     typename std::vector<std::tuple<N, N, E>>::const_iterator end) {
+template<typename N, typename E>
+gdwg::Graph<N, E>::Graph(
+      typename std::vector<std::tuple<N, N, E>>::const_iterator& start,
+      typename std::vector<std::tuple<N, N, E>>::const_iterator& end) {
+  while (start != end) {
+    this->InsertNode(std::get<0>(*start));
+    this->InsertNode(std::get<1>(*start));
+    this->InsertEdge(std::get<0>(*start), std::get<1>(*start), std::get<2>(*start));
+    start++;
+  }
 
-// }
+}
 
 template<typename N, typename E>
 bool gdwg::Graph<N, E>::InsertEdge(const N& from, const N& to, const E& edge) {
@@ -70,19 +76,27 @@ std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& g) {
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
-  if (this->g.cbegin() != this->g.cend()) {
-    return {this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
+  if (this->g.cbegin() == this->g.cend()) {
+    std::cout<<"NOT IMPLEMENTED YET"<<std::endl;
+    std::exit(1);
+    // TODO: fix by writing a default constructor for AdjacencyList::const_iterator
+    // return {this->g.cend(), this->g.cend(), {}};
   }
-  // Crashes when called on empty graph
-  // TODO: fix by writing a default constructor for AdjacencyList::const_iterator
-  return {this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
-  // return {this->g.cend(), this->g.cend(), {}};
+  return {this->g.cbegin(), this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
 }
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const {
-   typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outerEnd = this->g.cend();
-  return {outerEnd, outerEnd, {}};
+  if (this->g.cbegin() == this->g.cend()) {
+    std::cout<<"NOT IMPLEMENTED YET"<<std::endl;
+    exit(1);
+    // TODO: fix by writing a default constructor for AdjacencyList::const_iterator
+    // return {this->g.cend(), this->g.cend(), {}};
+  }
+  auto backSentinel = this->g.cend();
+  auto frontSentinel = this->g.cbegin();
+  auto lastValid = --(this->g.cend());
+  return {lastValid, frontSentinel, backSentinel, lastValid->second.cend()};
 }
 
 template<typename N, typename E>
@@ -90,10 +104,23 @@ typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::o
   ++inner_;
   if (inner_ == outer_->second.cend()) {
     ++outer_;
-    if (outer_ != sentinel_) {
+    if (outer_ != backSentinel_) {
       inner_ = outer_->second.cbegin();
     }
   }
+  return *this;
+}
+
+template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::operator--() {
+  if (inner_ == outer_->second.cbegin()) {
+    if (outer_ != frontSentinel_) {
+      --outer_;
+      inner_ = outer_->second.cend();
+    }
+  }
+  --inner_;
+  // std::cout<<"Decremented inner"<<std::endl;
   return *this;
 }
 
@@ -107,14 +134,18 @@ template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cbegin() const {
   // What if the first element is empty?
   if (this->list.cbegin() != this->list.cend()) {
-    return {this->list.cbegin(), this->list.cend(), this->list.cbegin()->second.cbegin()};
+    return {this->list.cbegin(), this->list.cbegin(), this->list.cend(), this->list.cbegin()->second.cbegin()};
   }
   return cend();
 }
 
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cend() const {
-  return {this->list.cend(), this->list.cend(), {}};
+  if (this->list.cbegin() == this->list.cend()) {
+    return {this->list.cend(), this->list.cend(), this->list.cend(), {}};
+  }
+  auto lastValid = --(this->list.cend());
+  return {lastValid, this->list.cbegin(), this->list.cend(), lastValid->second.cend()};
 }
 
 template<typename N, typename E>
@@ -122,10 +153,23 @@ typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::c
    ++inner_;
   if (inner_ == outer_->second.cend()) {
     ++outer_;
-    if (outer_ != sentinel_) {
+    if (outer_ != backSentinel_) {
       inner_ = outer_->second.cbegin();
     }
   }
+  return *this;
+}
+
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::const_iterator::operator--() {
+
+  if (inner_ == outer_->second.cbegin()) {
+    if (outer_ != frontSentinel_) {
+      --outer_;
+      inner_ = outer_->second.cend();
+    }
+  }
+  --inner_;
   return *this;
 }
 
