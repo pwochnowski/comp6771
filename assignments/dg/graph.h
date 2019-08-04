@@ -51,6 +51,11 @@ namespace gdwg {
           using pointer = std::tuple<N, E>*;
           using difference_type = int;
 
+          const_iterator() {
+            AdjacencyList<N, E> dummy;
+            *this = dummy.cend();
+          }
+
           const_iterator& operator=(const const_iterator& it) {
             this->outer_ = it.outer_;
             this->frontSentinel_ = it.frontSentinel_;
@@ -76,7 +81,7 @@ namespace gdwg {
 
           friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
             return (lhs.outer_ == rhs.outer_ &&
-                (lhs.inner_ == rhs.inner_ || lhs.outer_ == rhs.backSentinel_ || lhs.outer_ == rhs.frontSentinel_ )
+                (lhs.inner_ == rhs.inner_ || lhs.outer_ == rhs.backSentinel_ || lhs.outer_ == rhs.frontSentinel_)
             );
           }
           friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) {
@@ -89,6 +94,7 @@ namespace gdwg {
           typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator frontSentinel_;
           typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator backSentinel_;
           typename std::set<shared_pointer_store<E> >::const_iterator inner_;
+
 
           const_iterator(
               const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& outer,

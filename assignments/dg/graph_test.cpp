@@ -22,6 +22,7 @@ void printValue(typename gdwg::Graph<N, E>::const_iterator it) {
 }
 
 
+
 SCENARIO("increment/decrement iterators") {
   GIVEN("Some test graphs") {
       // Connected graph of 3 vertices
@@ -76,6 +77,15 @@ SCENARIO("increment/decrement iterators") {
         REQUIRE(*lastValid == *it1);
       }
 
-      //TODO: cases with empty adjacency lists + edge cases (i.e. transitioning with inner/outer)
+  }
+}
+
+ //TODO: cases with empty adjacency lists + edge cases (i.e. transitioning with inner/outer)
+TEST_CASE("constructors") {
+  SECTION("empty") {
+    gdwg::Graph<std::string, int> g;
+    auto b = g.cbegin();
+    auto e = g.cend();
+    REQUIRE(b == e);
   }
 }

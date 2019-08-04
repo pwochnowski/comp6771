@@ -77,10 +77,7 @@ std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& g) {
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   if (this->g.cbegin() == this->g.cend()) {
-    std::cout<<"NOT IMPLEMENTED YET"<<std::endl;
-    std::exit(1);
-    // TODO: fix by writing a default constructor for AdjacencyList::const_iterator
-    // return {this->g.cend(), this->g.cend(), {}};
+    return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
   }
   return {this->g.cbegin(), this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
 }
@@ -88,10 +85,7 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const {
   if (this->g.cbegin() == this->g.cend()) {
-    std::cout<<"NOT IMPLEMENTED YET"<<std::endl;
-    exit(1);
-    // TODO: fix by writing a default constructor for AdjacencyList::const_iterator
-    // return {this->g.cend(), this->g.cend(), {}};
+    return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
   }
   auto backSentinel = this->g.cend();
   auto frontSentinel = this->g.cbegin();
@@ -120,7 +114,6 @@ typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::o
     }
   }
   --inner_;
-  // std::cout<<"Decremented inner"<<std::endl;
   return *this;
 }
 
@@ -132,11 +125,10 @@ typename gdwg::Graph<N, E>::const_iterator::reference gdwg::Graph<N, E>::const_i
 
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cbegin() const {
-  // What if the first element is empty?
-  if (this->list.cbegin() != this->list.cend()) {
-    return {this->list.cbegin(), this->list.cbegin(), this->list.cend(), this->list.cbegin()->second.cbegin()};
+  if (this->list.cbegin() == this->list.cend()) {
+    return cend();
   }
-  return cend();
+  return {this->list.cbegin(), this->list.cbegin(), this->list.cend(), this->list.cbegin()->second.cbegin()};
 }
 
 template<typename N, typename E>
