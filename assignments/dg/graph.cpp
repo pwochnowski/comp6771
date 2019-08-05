@@ -50,23 +50,6 @@ bool gdwg::Graph<N, E>::InsertNode(const N& node) {
 }
 
 template<typename N, typename E>
-void gdwg::AdjacencyList<N, E>::addEdge(const shared_pointer_store<N>& v, const E& e) {
-  // Guaranteed that v is already in the list
-  this->list[v].insert(shared_pointer_store<E>(e));
-}
-
-
-template<typename N, typename E>
-std::ostream& operator<<(std::ostream& out, const gdwg::AdjacencyList<N, E>& l) {
-  for (auto& i : l.list) {
-    for (auto& j : i.second) {
-      out << "\t" << i.first << " | " << j<<"\n";
-    }
-  }
-  return out;
-}
-
-template<typename N, typename E>
 std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& g) {
   for (auto& i : g.g) {
     out << i.first<< " (\n" << i.second << ")\n";
@@ -181,4 +164,11 @@ typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::c
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator::reference gdwg::AdjacencyList<N, E>::const_iterator::operator*() const {
   return {*(outer_->first.ptr_), *(inner_->ptr_)};
+}
+
+
+template<typename N, typename E>
+void gdwg::AdjacencyList<N, E>::addEdge(const shared_pointer_store<N>& v, const E& e) {
+  // Guaranteed that v is already in the list
+  this->list[v].insert(shared_pointer_store<E>(e));
 }
