@@ -115,14 +115,18 @@ namespace gdwg {
           friend class AdjacencyList<N, E>;
       };
 
-
+      void DeleteNode(const N& v) { list.erase(v); };
       void addEdge(const shared_pointer_store<N>&, const E&);
       bool hasEdge(N v) {
         return list.find(v) != 0;
       }
 
       int GetSize() const {
-        return list.size();
+        int ret = 0;
+        for (const auto& val : list) {
+          ret += val.second.size();
+        }
+        return ret;
       }
 
 
@@ -133,23 +137,9 @@ namespace gdwg {
         auto it1 = l1.list.cbegin();
         auto it2 = l2.list.cbegin();
         while (it1 != l1.list.cend()) {
-
-          // std::cout<<"Checking "<< *(it1->first.ptr_)<< " : "<< *(it2->first.ptr_)<<std::endl;
           if (*it1 != *it2) {
             return false;
           }
-          // auto set1 = it1->second;
-          // auto set2 = it2->second;
-          // if (set1.size() != set2.size()) {
-          //   auto setIt1 = set1.cbegin();
-          //   auto setIt2 = set2.cbegin();
-          //   while (setIt1 != set1.cend()) {
-          //     std::cout<<"checking: "<< *(setIt1->ptr_) << " "<< *(setIt2->ptr_)<<std::endl;
-          //     // if (*setIt1 != *setIt2)
-          //     setIt1++;
-          //     setIt2++;
-          //   }
-          // }
           it1++;
           it2++;
         }
@@ -254,6 +244,7 @@ namespace gdwg {
 
       bool InsertNode(const N&);
       bool InsertEdge(const N&, const N&, const E&);
+      bool DeleteNode(const N&);
 
       // Friends
       friend bool operator==(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {
@@ -286,8 +277,8 @@ namespace gdwg {
 
       int numEdges() {
         int res = 0;
-        for (const auto& i : g) {
-          res += i.second.GetSize();
+        for (const auto& val : g) {
+          res += val.second.GetSize();
         }
         return res;
       }

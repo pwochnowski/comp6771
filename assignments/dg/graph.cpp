@@ -48,6 +48,21 @@ bool gdwg::Graph<N, E>::InsertNode(const N& node) {
   return true;
 }
 
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::DeleteNode(const N& node) {
+  shared_pointer_store<N> tmp = shared_pointer_store<N>(node);
+  if (this->g.count(tmp) == 0) {
+    return false;
+  }
+  // Find the shared pointer we have already created
+  // auto store = (this->g.find(tmp))->first;
+  this->g.erase(tmp);
+  for (auto& it : this->g) {
+    it.second.DeleteNode(node);
+  }
+  // store.reset();
+  return true;
+}
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
@@ -110,9 +125,6 @@ typename gdwg::Graph<N, E>::const_iterator::reference gdwg::Graph<N, E>::const_i
 
 
 
-
-
-
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cbegin() const {
   if (this->list.cbegin() == this->list.cend()) {
@@ -166,7 +178,6 @@ template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator::reference gdwg::AdjacencyList<N, E>::const_iterator::operator*() const {
   return {*(outer_->first.ptr_), *(inner_->ptr_)};
 }
-
 
 template<typename N, typename E>
 void gdwg::AdjacencyList<N, E>::addEdge(const shared_pointer_store<N>& v, const E& e) {

@@ -39,6 +39,17 @@ gdwg::Graph<std::string, int> sampleGraph() {
   return g;
 }
 
+TEST_CASE("Methods") {
+  SECTION("delete node") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    int oldN = g.numNodes();
+    int oldE = g.numEdges();
+    g.DeleteNode("are");
+    REQUIRE(g.numNodes() == oldN-1);
+    REQUIRE(g.numEdges() == oldE-3);
+  }
+}
+
 TEST_CASE("friends") {
   SECTION("equals") {
     GIVEN("a graph") {
@@ -83,7 +94,7 @@ TEST_CASE("iterators") {
       gdwg::Graph<std::string, int> g(b, e);
 
       REQUIRE(g.numNodes() == 3);
-      REQUIRE(g.numEdges() == 6);
+      REQUIRE(g.numEdges() == 7);
 
       THEN("increment from beginning through the entire graph") {
         std::vector<std::tuple<std::string, std::string, int>> exp{ab, ac1, ac2, ba, bc, ca, cb};
