@@ -17,6 +17,10 @@ namespace gdwg {
     shared_pointer_store(const std::shared_ptr<T>& ptr) : ptr_(ptr) {}
     shared_pointer_store(const T& entry) : ptr_(std::make_shared<T>(entry)) {}
 
+    bool operator==(const shared_pointer_store<T>& r) const {
+        return ptr_ == r.ptr_;
+    }
+
     bool operator < (const shared_pointer_store<T>& r) const {
         return *ptr_ < *r.ptr_;
     }
@@ -111,7 +115,31 @@ namespace gdwg {
 
 
       void addEdge(const shared_pointer_store<N>&, const E&);
+      bool hasEdge(N v) {
+        return list.find(v) != 0;
+      }
 
+      int GetSize() const {
+        return list.size();
+      }
+
+
+      friend bool operator==(const gdwg::AdjacencyList<N, E>& l1, const gdwg::AdjacencyList<N, E>& l2) {
+        if (l1.GetSize() != l2.GetSize()) {
+          return false;
+        }
+        auto it1 = l1.list.cbegin();
+        auto it2 = l2.list.cbegin();
+        while (it1 != l1.list.cend()) {
+          if (it1->first.ptr_ != it2->first.ptr_ || it1->second != it2->second) {
+            return false;
+          }
+          it1++;
+          it2++;
+        }
+        return true;
+      }
+      friend bool operator!=(const gdwg::AdjacencyList<N, E>& l1, const gdwg::AdjacencyList<N, E>& l2) {return !(l1 == l2); }
       friend std::ostream& operator<<(std::ostream& out, const gdwg::AdjacencyList<N, E>& l) {
         for (const auto& i : l.list) {
           for (const auto& j : i.second) {
@@ -124,14 +152,6 @@ namespace gdwg {
       const_iterator cbegin() const;
       const_iterator cend() const;
 
-      // Helper functions
-      bool hasEdge(N v) {
-        return list.find(v) != 0;
-      }
-
-      int GetSize() const {
-        return list.size();
-      }
     private:
       std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > > list;
   };
@@ -213,6 +233,23 @@ namespace gdwg {
       bool InsertNode(const N&);
       bool InsertEdge(const N&, const N&, const E&);
 
+      // Friends
+      friend bool operator==(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {
+        if (g1.numNodes() != g2.numNodes()) {
+          return false;
+        }
+        auto it1 = g1.g.cbegin();
+        auto it2 = g2.g.cbegin();
+        while (it1 != g1.g.cend()) {
+          if (it1->first.ptr_ != it2->first.ptr_ || it1->second != it2->second) {
+            return false;
+          }
+          it1++;
+          it2++;
+        }
+        return true;
+      }
+      friend bool operator!=(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {return !(g1 == g2); }
       friend std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& g) {
         for (auto& i : g.g) {
           out << *(i.first.ptr_) << " (\n" << i.second << ")\n";
@@ -221,7 +258,7 @@ namespace gdwg {
       }
 
       // Custom Helpers for tests
-      int numNodes() {
+      int numNodes() const {
         return g.size();
       }
 

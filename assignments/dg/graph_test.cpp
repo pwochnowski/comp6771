@@ -20,7 +20,37 @@ void printValue(std::tuple<N, N, E> val) {
   std::cout << std::get<0>(val) << " " << std::get<1>(val)<< " " << std::get<2>(val) << "\n";
 }
 
-TEST_CASE("constructors") {
+
+std::vector<std::tuple<std::string, std::string, int>> getSomeEges() {
+  std::string v1("A");
+  std::string v2("B");
+  std::string v3("C");
+
+  auto ab = std::make_tuple(v1, v2, 1);
+  auto ac2 = std::make_tuple(v1, v3, 2);
+  auto ac1 = std::make_tuple(v1, v3, 0);
+  auto ba = std::make_tuple(v2, v1, 0);
+  auto bc = std::make_tuple(v2, v3, 0);
+  auto ca = std::make_tuple(v3, v1, 1);
+  auto cb = std::make_tuple(v3, v2, 2);
+  return std::vector<std::tuple<std::string, std::string, int>>{ab, ac2, ac1, ba, bc, ca, cb};
+}
+
+
+TEST_CASE("friends") {
+  SECTION("equals") {
+    GIVEN("a graph + its copy") {
+      std::vector<std::tuple<std::string, std::string, int>> edges = getSomeEdges();
+      auto b = edges.cbegin();
+      auto e = edges.cend();
+      gdwg::Graph<std::string, int> g(b, e);
+      b = edges.cbegin();
+      gdwg::Graph<std::string, int> gCopy(b, e);
+      REQUIRE(g == gCopy);
+  }
+}
+
+TEST_CASE("iterators") {
   SECTION("iterator for empty graph") {
     gdwg::Graph<std::string, int> g;
     auto b = g.cbegin();
@@ -30,21 +60,14 @@ TEST_CASE("constructors") {
 
   SECTION("increment/decrement iterators") {
     GIVEN("Some test graphs") {
-      std::string v1("A");
-      std::string v2("B");
-      std::string v3("C");
 
-      auto ab = std::make_tuple(v1, v2, 1);
-      auto ac2 = std::make_tuple(v1, v3, 2);
-      auto ac1 = std::make_tuple(v1, v3, 0);
-      auto ba = std::make_tuple(v2, v1, 0);
-      auto bc = std::make_tuple(v2, v3, 0);
-      auto ca = std::make_tuple(v3, v1, 1);
-      auto cb = std::make_tuple(v3, v2, 2);
-      std::vector<std::tuple<std::string, std::string, int>> edges{ab, ac2, ac1, ba, bc, ca, cb};
+      std::vector<std::tuple<std::string, std::string, int>> edges = getSomeEdges();
       auto b = edges.cbegin();
       auto e = edges.cend();
       gdwg::Graph<std::string, int> g(b, e);
+      b = edges.cbegin();
+      gdwg::Graph<std::string, int> gCopy(b, e);
+      REQUIRE(g == gCopy);
 
       REQUIRE(g.numNodes() == 3);
       REQUIRE(g.numEdges() == 6);
@@ -100,5 +123,6 @@ TEST_CASE("constructors") {
       }
     }
   }
+}
 
 }
