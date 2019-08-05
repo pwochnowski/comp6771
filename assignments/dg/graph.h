@@ -139,6 +139,9 @@ namespace gdwg {
   template <typename N, typename E>
   class Graph {
     public:
+
+
+
       class const_iterator {
         public:
           using iterator_category = std::bidirectional_iterator_tag;
@@ -188,10 +191,22 @@ namespace gdwg {
               inner_{inner} {}
 
       };
-
+      const_iterator begin() { return cbegin(); };
+      const_iterator end() { return end(); };
       // Iterator methods
       const_iterator cbegin() const;
       const_iterator cend() const;
+
+      using const_reverse_iterator = std::reverse_iterator<gdwg::Graph<N,E>::const_iterator>;
+      const_reverse_iterator rbegin() { return const_reverse_iterator{end()}; }
+      const_reverse_iterator rend() { return const_reverse_iterator{begin()}; }
+      const_reverse_iterator rbegin() const { return crbegin(); }
+      const_reverse_iterator rend() const { return crend(); }
+      const_reverse_iterator crbegin() const { return const_reverse_iterator{cend()}; }
+      const_reverse_iterator crend() const { return const_reverse_iterator{cbegin()}; }
+
+
+
       // const_reverse_iterator crbegin();
 
 
