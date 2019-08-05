@@ -87,26 +87,31 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cend() const {
   if (this->g.cbegin() == this->g.cend()) {
     return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
   }
-  auto backSentinel = this->g.cend();
-  auto frontSentinel = this->g.cbegin();
   auto lastValid = --(this->g.cend());
-  return {lastValid, frontSentinel, backSentinel, lastValid->second.cend()};
+  return {this->g.cend(), this->g.cbegin(), this->g.cend(), lastValid->second.cend()};
 }
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::operator++() {
+  // std::cout<<"Incrementing graph inner"<<std::endl;
   ++inner_;
   if (inner_ == outer_->second.cend()) {
+    // std::cout<<"Incrementing graph outer"<<std::endl;
     ++outer_;
     if (outer_ != backSentinel_) {
       inner_ = outer_->second.cbegin();
     }
   }
+  // std::cout<<"Incremented graph inner"<<std::endl;
   return *this;
 }
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::operator--() {
+  // std::cout<<"Decrementing graph inner\n";
+  if (outer_ == backSentinel_) {
+    outer_--;
+  }
   if (inner_ == outer_->second.cbegin()) {
     if (outer_ != frontSentinel_) {
       --outer_;
@@ -114,6 +119,7 @@ typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::o
     }
   }
   --inner_;
+  // std::cout<<"Decremented graph inner\n";
   return *this;
 }
 
@@ -137,24 +143,30 @@ typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::ce
     return {this->list.cend(), this->list.cend(), this->list.cend(), {}};
   }
   auto lastValid = --(this->list.cend());
-  return {lastValid, this->list.cbegin(), this->list.cend(), lastValid->second.cend()};
+  return {this->list.cend(), this->list.cbegin(), this->list.cend(), lastValid->second.cend()};
 }
 
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::const_iterator::operator++() {
-   ++inner_;
+  // std::cout<<"Incrementing list inner\n";
+  ++inner_;
   if (inner_ == outer_->second.cend()) {
+    // std::cout<<"incrementing list outer"<<std::endl;
     ++outer_;
     if (outer_ != backSentinel_) {
       inner_ = outer_->second.cbegin();
     }
   }
+  // std::cout<<"Incremented list inner\n";
   return *this;
 }
 
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::const_iterator::operator--() {
-
+  // std::cout<<"Decrementing list inner\n";
+  if (outer_ == backSentinel_) {
+    outer_--;
+  }
   if (inner_ == outer_->second.cbegin()) {
     if (outer_ != frontSentinel_) {
       --outer_;
@@ -162,6 +174,7 @@ typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::c
     }
   }
   --inner_;
+  // std::cout<<"Decremented list inner\n";
   return *this;
 }
 

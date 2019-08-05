@@ -52,7 +52,7 @@ namespace gdwg {
           using difference_type = int;
 
           const_iterator() {
-            AdjacencyList<N, E> dummy;
+            static AdjacencyList<N, E> dummy;
             *this = dummy.cend();
           }
 
@@ -98,8 +98,8 @@ namespace gdwg {
 
           const_iterator(
               const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& outer,
-              const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& backSentinel,
               const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& frontSentinel,
+              const typename std::map<shared_pointer_store<N>, std::set<shared_pointer_store<E> > >::const_iterator& backSentinel,
               const typename std::set<shared_pointer_store<E> >::const_iterator& inner
           ) : outer_{outer},
               frontSentinel_{frontSentinel},
@@ -163,6 +163,7 @@ namespace gdwg {
           pointer operator->() const { return &(operator*()); }
 
           friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) {
+            // std::cout<<"(==) outer: "<< (lhs.outer_ == rhs.outer_)<< "\n(==) inner"
             return (lhs.outer_ == rhs.outer_ &&
                 (lhs.inner_ == rhs.inner_ || lhs.outer_ == rhs.backSentinel_ || lhs.outer_ == rhs.frontSentinel_ )
             );
@@ -178,14 +179,13 @@ namespace gdwg {
           friend class Graph<N, E>;
           const_iterator(
               typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator outer,
-              const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator backSentinel,
               const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator frontSentinel,
+              const typename std::map<shared_pointer_store<N>, AdjacencyList<N, E> >::const_iterator backSentinel,
               typename AdjacencyList<N, E>::const_iterator inner
           ) : outer_{outer},
               frontSentinel_{frontSentinel},
               backSentinel_{backSentinel},
               inner_{inner} {}
-
 
       };
 
