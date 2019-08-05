@@ -18,8 +18,9 @@ namespace gdwg {
     shared_pointer_store(const T& entry) : ptr_(std::make_shared<T>(entry)) {}
 
     bool operator==(const shared_pointer_store<T>& r) const {
-        return ptr_ == r.ptr_;
+      return *ptr_ == *r.ptr_;
     }
+    bool operator!=(const shared_pointer_store<T>& r) const { return !(*this == r); }
 
     bool operator < (const shared_pointer_store<T>& r) const {
         return *ptr_ < *r.ptr_;
@@ -45,6 +46,7 @@ namespace gdwg {
   class AdjacencyList {
     public:
       AdjacencyList() : list() {};
+      AdjacencyList(const gdwg::AdjacencyList<N, E>& other) : list{other.list} {};
       ~AdjacencyList() {};
 
       class const_iterator {
@@ -131,9 +133,23 @@ namespace gdwg {
         auto it1 = l1.list.cbegin();
         auto it2 = l2.list.cbegin();
         while (it1 != l1.list.cend()) {
-          if (it1->first.ptr_ != it2->first.ptr_ || it1->second != it2->second) {
+
+          // std::cout<<"Checking "<< *(it1->first.ptr_)<< " : "<< *(it2->first.ptr_)<<std::endl;
+          if (*it1 != *it2) {
             return false;
           }
+          // auto set1 = it1->second;
+          // auto set2 = it2->second;
+          // if (set1.size() != set2.size()) {
+          //   auto setIt1 = set1.cbegin();
+          //   auto setIt2 = set2.cbegin();
+          //   while (setIt1 != set1.cend()) {
+          //     std::cout<<"checking: "<< *(setIt1->ptr_) << " "<< *(setIt2->ptr_)<<std::endl;
+          //     // if (*setIt1 != *setIt2)
+          //     setIt1++;
+          //     setIt2++;
+          //   }
+          // }
           it1++;
           it2++;
         }
@@ -226,9 +242,15 @@ namespace gdwg {
 
       Graph();
       Graph(typename std::vector<N>::const_iterator&, typename std::vector<N>::const_iterator&);
-      Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator& ,
+      Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator&,
           typename std::vector<std::tuple<N, N, E>>::const_iterator&
       );
+      Graph(const gdwg::Graph<N, E>& other) : g{other.g} {};
+
+      gdwg::Graph<N,E>& operator=(const gdwg::Graph<N,E>& other) {
+        this->g = other.g;
+        return *this;
+      }
 
       bool InsertNode(const N&);
       bool InsertEdge(const N&, const N&, const E&);
@@ -241,7 +263,7 @@ namespace gdwg {
         auto it1 = g1.g.cbegin();
         auto it2 = g2.g.cbegin();
         while (it1 != g1.g.cend()) {
-          if (it1->first.ptr_ != it2->first.ptr_ || it1->second != it2->second) {
+          if (*it1 != *it2) {
             return false;
           }
           it1++;

@@ -1,9 +1,9 @@
 #include<iostream>
 #include<algorithm>
-template<typename N, typename E>
-gdwg::Graph<N,E>::Graph() {
 
-}
+// Constructors
+template<typename N, typename E>
+gdwg::Graph<N,E>::Graph() {}
 
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator& start,
@@ -24,7 +24,6 @@ gdwg::Graph<N, E>::Graph(
     this->InsertEdge(std::get<0>(*start), std::get<1>(*start), std::get<2>(*start));
     start++;
   }
-
 }
 
 template<typename N, typename E>
@@ -49,13 +48,6 @@ bool gdwg::Graph<N, E>::InsertNode(const N& node) {
   return true;
 }
 
-template<typename N, typename E>
-std::ostream& operator<<(std::ostream& out, const gdwg::Graph<N, E>& g) {
-  for (auto& i : g.g) {
-    out << i.first<< " (\n" << i.second << ")\n";
-  }
-  return out;
-}
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
@@ -111,6 +103,15 @@ typename gdwg::Graph<N, E>::const_iterator::reference gdwg::Graph<N, E>::const_i
   auto neighbor = *inner_;
   return {*(outer_->first.ptr_), std::get<0>(neighbor), std::get<1>(neighbor)};
 }
+
+
+
+
+
+
+
+
+
 
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cbegin() const {

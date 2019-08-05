@@ -21,32 +21,37 @@ void printValue(std::tuple<N, N, E> val) {
 }
 
 
-std::vector<std::tuple<std::string, std::string, int>> getSomeEges() {
-  std::string v1("A");
-  std::string v2("B");
-  std::string v3("C");
+gdwg::Graph<std::string, int> sampleGraph() {
+  gdwg::Graph<std::string, int> g;
+  g.InsertNode("hello");
+  g.InsertNode("how");
+  g.InsertNode("are");
+  g.InsertNode("you?");
 
-  auto ab = std::make_tuple(v1, v2, 1);
-  auto ac2 = std::make_tuple(v1, v3, 2);
-  auto ac1 = std::make_tuple(v1, v3, 0);
-  auto ba = std::make_tuple(v2, v1, 0);
-  auto bc = std::make_tuple(v2, v3, 0);
-  auto ca = std::make_tuple(v3, v1, 1);
-  auto cb = std::make_tuple(v3, v2, 2);
-  return std::vector<std::tuple<std::string, std::string, int>>{ab, ac2, ac1, ba, bc, ca, cb};
+  g.InsertEdge("hello", "how", 5);
+  g.InsertEdge("hello", "are", 8);
+  g.InsertEdge("hello", "are", 2);
+
+  g.InsertEdge("how", "you?", 1);
+  g.InsertEdge("how", "hello", 4);
+
+  g.InsertEdge("are", "you?", 3);
+  return g;
 }
-
 
 TEST_CASE("friends") {
   SECTION("equals") {
-    GIVEN("a graph + its copy") {
-      std::vector<std::tuple<std::string, std::string, int>> edges = getSomeEdges();
-      auto b = edges.cbegin();
-      auto e = edges.cend();
-      gdwg::Graph<std::string, int> g(b, e);
-      b = edges.cbegin();
-      gdwg::Graph<std::string, int> gCopy(b, e);
-      REQUIRE(g == gCopy);
+    GIVEN("a graph") {
+      gdwg::Graph<std::string, int> g = sampleGraph();
+      THEN("Check equality holds for a copy constructed graph") {
+        gdwg::Graph<std::string, int> gCopy(sampleGraph());
+        REQUIRE(g == gCopy);
+      }
+      THEN("Check equality fails with empty graph") {
+        gdwg::Graph<std::string, int> empty;
+        REQUIRE(g != empty);
+      }
+    }
   }
 }
 
@@ -60,14 +65,22 @@ TEST_CASE("iterators") {
 
   SECTION("increment/decrement iterators") {
     GIVEN("Some test graphs") {
+      std::string v1("A");
+      std::string v2("B");
+      std::string v3("C");
 
-      std::vector<std::tuple<std::string, std::string, int>> edges = getSomeEdges();
+      auto ab = std::make_tuple(v1, v2, 1);
+      auto ac2 = std::make_tuple(v1, v3, 2);
+      auto ac1 = std::make_tuple(v1, v3, 0);
+      auto ba = std::make_tuple(v2, v1, 0);
+      auto bc = std::make_tuple(v2, v3, 0);
+      auto ca = std::make_tuple(v3, v1, 1);
+      auto cb = std::make_tuple(v3, v2, 2);
+      std::vector<std::tuple<std::string, std::string, int>> edges{ab, ac2, ac1, ba, bc, ca, cb};
+
       auto b = edges.cbegin();
       auto e = edges.cend();
       gdwg::Graph<std::string, int> g(b, e);
-      b = edges.cbegin();
-      gdwg::Graph<std::string, int> gCopy(b, e);
-      REQUIRE(g == gCopy);
 
       REQUIRE(g.numNodes() == 3);
       REQUIRE(g.numEdges() == 6);
@@ -123,6 +136,4 @@ TEST_CASE("iterators") {
       }
     }
   }
-}
-
 }
