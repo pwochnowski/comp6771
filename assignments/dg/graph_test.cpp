@@ -39,6 +39,66 @@ gdwg::Graph<std::string, int> sampleGraph() {
   return g;
 }
 
+TEST_CASE("Constructors") {
+  SECTION("Vector of nodes") {
+    std::vector<int> v{1, 2 ,3};
+    gdwg::Graph<int, int> g{v.begin(), v.end()};
+    REQUIRE(g.numNodes() == 3);
+    REQUIRE(g.numEdges() == 0);
+    REQUIRE(g.IsNode(1));
+    REQUIRE(g.IsNode(2));
+    REQUIRE(g.IsNode(3));
+  }
+  SECTION("Vector of edges") {
+    std::vector<std::tuple<std::string, std::string, int>> v{
+        {"one", "two", 1}, {"two", "three", 0}, {"one", "three", 3}};
+    gdwg::Graph<std::string, int> g{v.begin(), v.end()};
+    REQUIRE(g.numNodes() == 3);
+    REQUIRE(g.numEdges() == 3);
+    REQUIRE(g.IsNode("one"));
+    REQUIRE(g.IsNode("two"));
+    REQUIRE(g.IsNode("three"));
+    REQUIRE(g.find("one", "two", 1) != g.cend());
+    REQUIRE(g.find("two", "three", 0) != g.cend());
+    REQUIRE(g.find("one", "three", 3) != g.cend());
+  }
+  SECTION("initializer list") {
+    gdwg::Graph<int, int> g{1, 2, 3};
+    REQUIRE(g.numNodes() == 3);
+    REQUIRE(g.numEdges() == 0);
+    REQUIRE(g.IsNode(1));
+    REQUIRE(g.IsNode(2));
+    REQUIRE(g.IsNode(3));
+  }
+  SECTION("Copy constructor") {
+    // By the previous test this is enough to check equivalence with the original graph
+    gdwg::Graph<int, int> g{1, 2, 3};
+    auto copy{g};
+    REQUIRE(copy.numNodes() == 3);
+    REQUIRE(copy.numEdges() == 0);
+    REQUIRE(copy.IsNode(1));
+    REQUIRE(copy.IsNode(2));
+    REQUIRE(copy.IsNode(3));
+  }
+  SECTION("Move Constructor") {
+    std::vector<std::tuple<int, int, int>> v = {{1, 2, 0}, {1, 3, 1}, {2, 3, 2}};
+    gdwg::Graph<int, int> g{v.begin(), v.end()};
+    auto g2{std::move(g)};
+    REQUIRE(!g.IsNode(1));
+    REQUIRE(!g.IsNode(2));
+    REQUIRE(!g.IsNode(3));
+    REQUIRE(g.find(1, 2, 0) == g.cend());
+    REQUIRE(g.find(1, 3, 1) == g.cend());
+    REQUIRE(g.find(2, 3, 2) == g.cend());
+    REQUIRE(g2.IsNode(1));
+    REQUIRE(g2.IsNode(2));
+    REQUIRE(g2.IsNode(3));
+    REQUIRE(g2.find(1, 2, 0) != g.cend());
+    REQUIRE(g2.find(1, 3, 1) != g.cend());
+    REQUIRE(g2.find(2, 3, 2) != g.cend());
+  }
+}
+
 TEST_CASE("Methods") {
   SECTION("clear graph") {
     gdwg::Graph<std::string, int> g = sampleGraph();
@@ -55,19 +115,19 @@ TEST_CASE("Methods") {
       gdwg::Graph<std::string, int> g = sampleGraph();
 
       THEN("standard case") {
-        auto val = g.erase(std::string("hello"), std::string("are"), 2);
+        auto val = g.erase(g.find(std::string("hello"), std::string("are"), 2));
         auto exp = std::make_tuple(std::string("hello"), std::string("are"), 8);
         REQUIRE(*val == exp);
       }
 
       THEN("deleting the last edge of the first of two neighbour") {
-        auto val = g.erase(std::string("hello"), std::string("are"), 8);
+        auto val = g.erase(g.find(std::string("hello"), std::string("are"), 8));
         auto exp = std::make_tuple(std::string("hello"), std::string("how"), 5);
         REQUIRE(*val == exp);
       }
 
       THEN("deleting the only edge of the second of two neighbours") {
-        auto val = g.erase(std::string("hello"), std::string("how"), 5);
+        auto val = g.erase(g.find(std::string("hello"), std::string("how"), 5));
         auto exp = std::make_tuple(std::string("how"), std::string("hello"), 4);
         auto expPrev = std::make_tuple(std::string("hello"), std::string("are"), 8);
         REQUIRE(*val == exp);
@@ -76,7 +136,7 @@ TEST_CASE("Methods") {
 
       THEN("deleting the last edge of last vertex") {
         g.DeleteNode(std::string("you?"));
-        auto val = g.erase(std::string("how"), std::string("hello"), 4);
+        auto val = g.erase(g.find(std::string("how"), std::string("hello"), 4));
         auto exp = g.cend();
         REQUIRE(val == exp);
         --val;

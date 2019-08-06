@@ -6,8 +6,8 @@ template<typename N, typename E>
 gdwg::Graph<N,E>::Graph() {}
 
 template<typename N, typename E>
-gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator& start,
-    typename std::vector<N>::const_iterator& end) {
+gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator start,
+    typename std::vector<N>::const_iterator end) {
   while (start != end) {
     this->InsertNode(*start);
     start++;
@@ -16,13 +16,20 @@ gdwg::Graph<N, E>::Graph(typename std::vector<N>::const_iterator& start,
 
 template<typename N, typename E>
 gdwg::Graph<N, E>::Graph(
-      typename std::vector<std::tuple<N, N, E>>::const_iterator& start,
-      typename std::vector<std::tuple<N, N, E>>::const_iterator& end) {
+      typename std::vector<std::tuple<N, N, E>>::const_iterator start,
+      typename std::vector<std::tuple<N, N, E>>::const_iterator end) {
   while (start != end) {
     this->InsertNode(std::get<0>(*start));
     this->InsertNode(std::get<1>(*start));
     this->InsertEdge(std::get<0>(*start), std::get<1>(*start), std::get<2>(*start));
     start++;
+  }
+}
+
+template<typename N, typename E>
+gdwg::Graph<N, E>::Graph(std::initializer_list<N> l) {
+  for (const auto& node : l) {
+    InsertNode(node);
   }
 }
 
@@ -43,25 +50,42 @@ bool gdwg::Graph<N, E>::IsNode(const N& n) const {
 template<typename N, typename E>
 bool gdwg::Graph<N, E>::IsConnected(const N& from, const N& to) const {
   shared_pointer_store<N> src = shared_pointer_store<N>(from);
-  const auto val = g.find(src);
+  shared_pointer_store<N> dest = shared_pointer_store<N>(to);
+  const auto& val = g.find(src);
+  if (val == g.cend() || g.count(dest) == 0) {
+    throw std::runtime_error("Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
+  }
   return val->second.hasEdge(to);
+}
+
+template<typename N, typename E>
+std::vector<N> gdwg::Graph<N, E>::GetNodes() const {
+  std::vector<N> res;
+  for (const auto& i : g) {
+    res.push_back(*(i.first.ptr_));
+  }
+  return res;
 }
 
 template<typename N, typename E>
 std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& node) const {
   shared_pointer_store<N> v = shared_pointer_store<N>(node);
   const auto val = g.find(v);
+  if (val == g.cend()) {
+    throw std::out_of_range("Cannot call Graph::GetConnected if src doesn't exist in the graph");
+  }
   return val->second.GetNeighbours();
 }
 
 template<typename N, typename E>
 std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& from, const N& to) const {
-  shared_pointer_store<N> v1 = shared_pointer_store<N>(from);
-  const auto src = g.find(v1);
-  if (src == g.end()) {
-    return std::vector<E>();
+  shared_pointer_store<N> src = shared_pointer_store<N>(from);
+  shared_pointer_store<N> dest = shared_pointer_store<N>(to);
+  const auto val = g.find(src);
+  if (val == g.cend() || g.count(dest) == 0) {
+    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph");
   }
-  return src->second.GetWeights(to);
+  return val->second.GetWeights(to);
 }
 
 template<typename N, typename E>
@@ -69,12 +93,11 @@ bool gdwg::Graph<N, E>::InsertEdge(const N& from, const N& to, const E& edge) {
   shared_pointer_store<N> src = shared_pointer_store<N>(from);
   shared_pointer_store<N> dest = shared_pointer_store<N>(to);
   if (this->g.count(src) == 0 || this->g.count(dest) == 0) {
-    return false;
+    throw std::runtime_error("Cannot call Graph::InsertEdge when either src or dst node does not exist");
   }
   // Find the shared pointer we have already created
   auto store = (this->g.find(dest))->first;
-  this->g[from].addEdge(store, edge);
-  return true;
+  return this->g[from].addEdge(store, edge);
 }
 
 template<typename N, typename E>
@@ -192,20 +215,29 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::find(const N& n1, 
 }
 
 template<typename N, typename E>
-typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(const N& n1, const N& n2, const E& edge) {
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<N,E>::const_iterator it) {
+  const auto& val = *it;
+  const N& n1 = std::get<0>(val);
+  const N& n2 = std::get<1>(val);
+  const E&  e = std::get<2>(val);
+  if (find(n1, n2, e) == cend()) {
+    return cend();
+  }
+
   gdwg::shared_pointer_store<N> tmp(n1);
   auto outerVal = g.find(tmp);
   if (outerVal == g.end()) {
     return cend();
   }
-  auto innerVal = outerVal->second.erase(n2, edge);
+  auto innerVal = outerVal->second.erase(n2, e);
   // std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
   if (innerVal == outerVal->second.cend()) {
     outerVal++;
-    // std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
     if (outerVal == g.cend()) {
+      // std::cout<<"reached end\n";
       return cend();
     }
+    // std::cout<<"moved to next node in graph now at: "<< *(outerVal->first.ptr_)<<std::endl;
     innerVal = outerVal->second.cbegin();
   }
   return {outerVal, g.cbegin(), g.cend(), innerVal};
@@ -214,6 +246,7 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(const N& n1,
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   if (this->g.cbegin() == this->g.cend()) {
+    std::cout<<"List empty yo\n";
     return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
   }
   return {this->g.cbegin(), this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
@@ -372,9 +405,14 @@ typename gdwg::AdjacencyList<N, E>::const_iterator::reference gdwg::AdjacencyLis
 }
 
 template<typename N, typename E>
-void gdwg::AdjacencyList<N, E>::addEdge(const shared_pointer_store<N>& v, const E& e) {
+bool gdwg::AdjacencyList<N, E>::addEdge(const shared_pointer_store<N>& v, const E& e) {
   // Guaranteed that v is already in the list
-  this->list[v].insert(shared_pointer_store<E>(e));
+  shared_pointer_store<E> tmp{e};
+  if (list[v].find(e) != list[v].cend()) {
+    return false;
+  }
+  this->list[v].insert(e);
+  return true;
 }
 
 template<typename N, typename E>
