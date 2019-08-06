@@ -221,40 +221,40 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::find(const N& n1, 
   return {outerVal, g.cbegin(), g.cend(), innerVal};
 }
 
-template<typename N, typename E>
-typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<N,E>::const_iterator it) {
-  if (it == cend()) {
-    return cend();
-  }
-  const auto& val = *it;
-  const N& n1 = std::get<0>(val);
-  const N& n2 = std::get<1>(val);
-  const E&  e = std::get<2>(val);
-  auto it = find(n1, n2, e);
-  // auto it = find(n1, n2, e);
-  if (find(n1, n2, e) == cend()) {
-    return cend();
-  }
-
-  gdwg::shared_pointer_store<N> tmp(n1);
-  auto outerVal = g.find(tmp);
-  if (outerVal == g.end()) {
-    return cend();
-  }
-  auto innerVal = outerVal->second.erase(n2, e);
-  std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
-  while (innerVal == outerVal->second.cend()) {
-    outerVal++;
-    if (outerVal == g.cend()) {
-      std::cout<<"return cend\n";
-      return cend();
-    }
-    std::cout<<"moved to next node in graph now at: "<< *(outerVal->first.ptr_)<<std::endl;
-    innerVal = outerVal->second.cbegin();
-  }
-  std::cout<<"return normally\n";
-  return {outerVal, g.cbegin(), g.cend(), innerVal};
-}
+//template<typename N, typename E>
+//typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<N,E>::const_iterator it) {
+//  if (it == cend()) {
+//    return cend();
+//  }
+//  const auto& val = *it;
+//  const N& n1 = std::get<0>(val);
+//  const N& n2 = std::get<1>(val);
+//  const E&  e = std::get<2>(val);
+//  auto it = find(n1, n2, e);
+//  // auto it = find(n1, n2, e);
+//  if (find(n1, n2, e) == cend()) {
+//    return cend();
+//  }
+//
+//  gdwg::shared_pointer_store<N> tmp(n1);
+//  auto outerVal = g.find(tmp);
+//  if (outerVal == g.end()) {
+//    return cend();
+//  }
+//  auto innerVal = outerVal->second.erase(n2, e);
+//  std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
+//  while (innerVal == outerVal->second.cend()) {
+//    outerVal++;
+//    if (outerVal == g.cend()) {
+//      std::cout<<"return cend\n";
+//      return cend();
+//    }
+//    std::cout<<"moved to next node in graph now at: "<< *(outerVal->first.ptr_)<<std::endl;
+//    innerVal = outerVal->second.cbegin();
+//  }
+//  std::cout<<"return normally\n";
+//  return {outerVal, g.cbegin(), g.cend(), innerVal};
+//}
 
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
@@ -458,4 +458,30 @@ template<typename N, typename E>
 void gdwg::AdjacencyList<N, E>::DeleteNode(const N& node) {
   shared_pointer_store<N> v(node);
   list.erase(v);
-};
+}
+
+
+template<typename N, typename E>
+
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<N,E>::const_iterator
+  it) {
+  if (it == cend()) {
+    return cend();
+  }
+  //Get iterator to next element
+  Graph<N, E>::const_iterator ret = ++it;
+  --it;
+  //Erase the edge pointed to by the input iterator
+  auto edge = *it;
+  auto from = std::get<0>(edge);
+  auto to = std::get<1>(edge);
+  auto edge_weight = std::get<2>(edge);
+
+  gdwg::AdjacencyList l = this->g[shared_pointer_store<N>(from)];
+  std::set<shared_pointer_store<E> > old_edges = l.GetEdgeSet(shared_pointer_store<N>(to));
+  old_edges.erase(shared_pointer_store<E>(edge_weight));
+  l.SetEdgeSet(shared_pointer_store<N>(to), old_edges);
+  this->g[shared_pointer_store<N>(from)] = l;
+
+  return ret;
+}

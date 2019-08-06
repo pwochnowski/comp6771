@@ -30,10 +30,31 @@ int main() {
 //  g.Replace("ar", "are");
 //  std::cout << g << '\n';
 
-  g.MergeReplace("how", "are");
-  std::cout << g << '\n';
+//  g.MergeReplace("how", "are");
+//  std::cout << g << '\n';
+
+//  decltype(g)::const_iterator it = g.cbegin();
+//  decltype(g)::const_iterator it_2 = g.cbegin();
+//  it_2 = g.erase(it);
+//  std::cout << g << '\n';
+//
+//
+//  std::cout << std::get<0>(*it_2) << " ";
+//  std::cout << std::get<1>(*it_2) << " ";
+//  std::cout << std::get<2>(*it_2) << "\n";
+
+
 
   decltype(g)::const_iterator it = g.cbegin();
+
+
+  g.erase(it);
+  std::cout << '\n';
+  std::cout << g << '\n';
+
+
+
+
   auto val = *it;
   std::cout << std::get<0>(val) << " " << std::get<1>(val)<< " " << std::get<2>(val) << "\n";
   it++;
