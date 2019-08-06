@@ -62,6 +62,28 @@ TEST_CASE("Methods") {
     REQUIRE(!g.IsConnected(std::string("are"), std::string("hello")));
   }
 
+  SECTION("GetConnected") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    auto neighbours = g.GetConnected("hello");
+    REQUIRE(neighbours.size() == 2);
+    REQUIRE(neighbours[0] == "are");
+    REQUIRE(neighbours[1] == "how");
+    neighbours = g.GetConnected("you?");
+    REQUIRE(neighbours.size() == 0);
+
+  }
+
+   SECTION("GetConnected") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    auto weights = g.GetWeights("hello", "are");
+    REQUIRE(weights.size() == 2);
+    REQUIRE(weights[0] == 2);
+    REQUIRE(weights[1] == 8);
+    weights = g.GetWeights("hello", "you?");
+    REQUIRE(weights.size() == 0);
+
+  }
+
   SECTION("delete node") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     int oldN = g.numNodes();

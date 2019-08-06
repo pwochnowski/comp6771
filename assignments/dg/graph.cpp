@@ -47,6 +47,23 @@ bool gdwg::Graph<N, E>::IsConnected(const N& from, const N& to) const {
 }
 
 template<typename N, typename E>
+std::vector<N> gdwg::Graph<N, E>::GetConnected(const N& node) const {
+  shared_pointer_store<N> v = shared_pointer_store<N>(node);
+  const auto val = g.find(v);
+  return val->second.GetNeighbours();
+}
+
+template<typename N, typename E>
+std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& from, const N& to) const {
+  shared_pointer_store<N> v1 = shared_pointer_store<N>(from);
+  const auto src = g.find(v1);
+  if (src == g.end()) {
+    return std::vector<E>();
+  }
+  return src->second.GetWeights(to);
+}
+
+template<typename N, typename E>
 bool gdwg::Graph<N, E>::InsertEdge(const N& from, const N& to, const E& edge) {
   shared_pointer_store<N> src = shared_pointer_store<N>(from);
   shared_pointer_store<N> dest = shared_pointer_store<N>(to);
@@ -205,4 +222,26 @@ template<typename N, typename E>
 void gdwg::AdjacencyList<N, E>::addEdge(const shared_pointer_store<N>& v, const E& e) {
   // Guaranteed that v is already in the list
   this->list[v].insert(shared_pointer_store<E>(e));
+}
+
+template<typename N, typename E>
+std::vector<N> gdwg::AdjacencyList<N, E>::GetNeighbours() const {
+  std::vector<N> res;
+  for (const auto& val : list) {
+    res.push_back(*(val.first.ptr_));
+  }
+  return res;
+}
+template<typename N, typename E>
+std::vector<E> gdwg::AdjacencyList<N, E>::GetWeights(const N& node) const {
+  shared_pointer_store<N> v2 = shared_pointer_store<N>(node);
+  std::vector<E> res;
+  const auto val = list.find(v2);
+  if (val == list.end()) {
+    return res;
+  }
+  for (const auto& edge : val->second) {
+    res.push_back(*(edge.ptr_));
+  }
+  return res;
 }

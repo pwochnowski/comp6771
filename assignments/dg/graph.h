@@ -132,6 +132,8 @@ namespace gdwg {
         shared_pointer_store<N> v(node);
         return list.count(v) != 0;
       }
+      std::vector<N> GetNeighbours() const;
+      std::vector<E> GetWeights(const N& v) const;
 
       int GetSize() const {
         int ret = 0;
@@ -260,6 +262,8 @@ namespace gdwg {
       bool IsNode(const N&) const;
       void Clear();
       bool IsConnected(const N&, const N&) const;
+      std::vector<N> GetConnected(const N&) const;
+      std::vector<E> GetWeights(const N&, const N&) const;
 
       // Friends
       friend bool operator==(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {
