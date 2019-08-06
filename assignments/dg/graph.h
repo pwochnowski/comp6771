@@ -31,16 +31,24 @@ namespace gdwg {
     std::shared_ptr<T> ptr_;
   };
 
-  // template<typename B>
-  // struct unique_pointer_store {
-  //   unique_pointer_store(const std::unique_ptr<B>& ptr) : ptr_(ptr) {}
-  //   unique_pointer_store(const B& entry) : ptr_(std::make_unique<B>(entry)) {}
+  template<typename T>
+  struct unique_pointer_store {
+    unique_pointer_store(const std::unique_ptr<T>& ptr) : ptr_(ptr) {}
+    unique_pointer_store(const T& entry) : ptr_(std::make_unique<T>(entry)) {}
 
-  //   bool operator < (const unique_pointer_store<B>& r) const {
-  //       return *ptr_ < *r.ptr_;
-  //   }
-  //   std::unique_ptr<B> ptr_;
-  // };
+    bool operator==(const unique_pointer_store<T>& r) const {
+      return *ptr_ == *r.ptr_;
+    }
+    bool operator!=(const unique_pointer_store<T>& r) const { return !(*this == r); }
+
+    bool operator < (const unique_pointer_store<T>& r) const {
+        return *ptr_ < *r.ptr_;
+    }
+    const T& operator*() {
+      return *ptr_;
+    }
+    std::unique_ptr<T> ptr_;
+  };
 
   template<typename N, typename E>
   class AdjacencyList {
@@ -115,10 +123,14 @@ namespace gdwg {
           friend class AdjacencyList<N, E>;
       };
 
-      void DeleteNode(const N& v) { list.erase(v); };
+      void DeleteNode(const N& node) {
+        shared_pointer_store<N> v(node);
+        list.erase(v);
+      };
       void addEdge(const shared_pointer_store<N>&, const E&);
-      bool hasEdge(N v) {
-        return list.find(v) != 0;
+      bool hasEdge(const N& node) const {
+        shared_pointer_store<N> v(node);
+        return list.count(v) != 0;
       }
 
       int GetSize() const {
@@ -247,6 +259,7 @@ namespace gdwg {
       bool DeleteNode(const N&);
       bool IsNode(const N&) const;
       void Clear();
+      bool IsConnected(const N&, const N&) const;
 
       // Friends
       friend bool operator==(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {

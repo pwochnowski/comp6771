@@ -56,6 +56,11 @@ TEST_CASE("Methods") {
     REQUIRE(!g.IsNode(std::string("")));
   }
 
+  SECTION("IsConnected") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    REQUIRE(g.IsConnected(std::string("hello"), std::string("are")));
+    REQUIRE(!g.IsConnected(std::string("are"), std::string("hello")));
+  }
 
   SECTION("delete node") {
     gdwg::Graph<std::string, int> g = sampleGraph();

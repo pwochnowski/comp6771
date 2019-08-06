@@ -40,6 +40,13 @@ bool gdwg::Graph<N, E>::IsNode(const N& n) const {
 }
 
 template<typename N, typename E>
+bool gdwg::Graph<N, E>::IsConnected(const N& from, const N& to) const {
+  shared_pointer_store<N> src = shared_pointer_store<N>(from);
+  const auto val = g.find(src);
+  return val->second.hasEdge(to);
+}
+
+template<typename N, typename E>
 bool gdwg::Graph<N, E>::InsertEdge(const N& from, const N& to, const E& edge) {
   shared_pointer_store<N> src = shared_pointer_store<N>(from);
   shared_pointer_store<N> dest = shared_pointer_store<N>(to);
