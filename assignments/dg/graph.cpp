@@ -27,6 +27,7 @@ gdwg::Graph<N, E>::Graph(
 }
 
 
+
 template<typename N, typename E>
 void gdwg::Graph<N, E>::Clear() {
   // Maybe have to clear each AdjacancyList stored inside

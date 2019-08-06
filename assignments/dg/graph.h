@@ -253,6 +253,8 @@ namespace gdwg {
         this->g = other.g;
         return *this;
       }
+      Graph<N, E>(Graph<N, E>&& other) : noexcept : g_{std::move(other.g)} {};
+      ~Graph<N, E>() = default;
 
       bool InsertNode(const N&);
       bool InsertEdge(const N&, const N&, const E&);
