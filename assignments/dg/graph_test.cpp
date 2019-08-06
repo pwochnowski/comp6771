@@ -5,7 +5,9 @@
   as well as using helper functions to check the internal state of the Graph
   to ensure that only desirable changes have occurred.
 
-  To ensure
+  To ensure test coverage we have tests for every function in the spec and
+  test it with as many differing return values as possible
+
 
   We test exceptions with REQUIRE_THROWS_WITH and REQUIRE_THROWS_AS
 
