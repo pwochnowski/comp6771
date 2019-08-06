@@ -40,6 +40,23 @@ gdwg::Graph<std::string, int> sampleGraph() {
 }
 
 TEST_CASE("Methods") {
+  SECTION("clear graph") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    REQUIRE(g.numNodes() != 0);
+    g.Clear();
+    REQUIRE(g.numNodes() == 0);
+    // Check clearing empty graph is fine
+    g.Clear();
+    REQUIRE(g.numNodes() == 0);
+  }
+
+  SECTION("IsNode") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    REQUIRE(g.IsNode(std::string("hello")));
+    REQUIRE(!g.IsNode(std::string("")));
+  }
+
+
   SECTION("delete node") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     int oldN = g.numNodes();

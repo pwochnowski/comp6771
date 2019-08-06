@@ -245,6 +245,8 @@ namespace gdwg {
       bool InsertNode(const N&);
       bool InsertEdge(const N&, const N&, const E&);
       bool DeleteNode(const N&);
+      bool IsNode(const N&) const;
+      void Clear();
 
       // Friends
       friend bool operator==(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {

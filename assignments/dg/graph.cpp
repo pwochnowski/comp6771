@@ -26,13 +26,28 @@ gdwg::Graph<N, E>::Graph(
   }
 }
 
+
+template<typename N, typename E>
+void gdwg::Graph<N, E>::Clear() {
+  // Maybe have to clear each AdjacancyList stored inside
+  this->g.clear();
+}
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::IsNode(const N& n) const {
+  shared_pointer_store<N> tmp = shared_pointer_store<N>(n);
+  return this->g.count(tmp) != 0;
+}
+
 template<typename N, typename E>
 bool gdwg::Graph<N, E>::InsertEdge(const N& from, const N& to, const E& edge) {
-  if (this->g.count(from) == 0 || this->g.count(to) == 0) {
+  shared_pointer_store<N> src = shared_pointer_store<N>(from);
+  shared_pointer_store<N> dest = shared_pointer_store<N>(to);
+  if (this->g.count(src) == 0 || this->g.count(dest) == 0) {
     return false;
   }
   // Find the shared pointer we have already created
-  auto store = (this->g.find(shared_pointer_store<N>{to}))->first;
+  auto store = (this->g.find(dest))->first;
   this->g[from].addEdge(store, edge);
   return true;
 }
