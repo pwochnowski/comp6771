@@ -543,6 +543,7 @@ SCENARIO("const_iterator erase tests") {
       THEN("it gets erased, and the iterator points to the end") {
         // auto it = g.erase(g.begin());
         auto it = g.erase(--g.end());
+        // printValue(*it);
         printValue(*(--g.end()));
         auto exp = g.end();
         REQUIRE(it == exp);
