@@ -541,13 +541,12 @@ SCENARIO("const_iterator erase tests") {
     }
     AND_WHEN("we erase the last edge") {
       THEN("it gets erased, and the iterator points to the end") {
-        // // auto it = g.erase(g.begin());
-        // auto it = g.erase(--g.end());
-        // // printValue(*it);
-        // printValue(*(--g.end()));
-        // auto exp = g.end();
-        // REQUIRE(it == exp);
-        // REQUIRE(g.find("b", "c", 1) == g.end());
+        // auto it = g.erase(g.begin());
+        auto it = g.erase(--g.end());
+        // printValue(*it);
+        auto exp = g.end();
+        REQUIRE(it == exp);
+        REQUIRE(g.find("b", "c", 1) == g.end());
       }
     }
     AND_WHEN("we erase a non-existent edge") {
