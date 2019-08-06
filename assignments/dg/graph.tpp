@@ -159,7 +159,7 @@ template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::operator++() {
   // std::cout<<"Incrementing graph inner"<<std::endl;
   ++inner_;
-  while (inner_ == outer_->second.cend()) {
+  while (inner_ == outer_->second.cend() && outer_ != backSentinel_) {
     // std::cout<<"Incrementing graph outer"<<std::endl;
     ++outer_;
     if (outer_ != backSentinel_) {
@@ -176,7 +176,7 @@ typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::o
   if (outer_ == backSentinel_) {
     outer_--;
   }
-  while (inner_ == outer_->second.cbegin()) {
+  while (inner_ == outer_->second.cbegin() && outer_ != frontSentinel_) {
     if (outer_ != frontSentinel_) {
       --outer_;
       inner_ = outer_->second.cend();
