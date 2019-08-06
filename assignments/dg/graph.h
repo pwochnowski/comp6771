@@ -55,7 +55,8 @@ namespace gdwg {
     public:
       AdjacencyList() : list() {};
       AdjacencyList(const gdwg::AdjacencyList<N, E>& other) : list{other.list} {};
-      ~AdjacencyList() {};
+      AdjacencyList(AdjacencyList<N,E>&& other) noexcept : list{std::move(other.list)} {};
+      ~AdjacencyList() = default;
 
       class const_iterator {
         public:
@@ -122,6 +123,10 @@ namespace gdwg {
 
           friend class AdjacencyList<N, E>;
       };
+      AdjacencyList& operator=(const AdjacencyList& other) {
+        this->list = other.list;
+        return *this;
+      }
 
       void DeleteNode(const N& node) {
         shared_pointer_store<N> v(node);
@@ -253,7 +258,7 @@ namespace gdwg {
         this->g = other.g;
         return *this;
       }
-      Graph<N, E>(Graph<N, E>&& other) noexcept : g_{std::move(other.g)} {};
+      Graph<N, E>(Graph<N, E>&& other) noexcept : g{std::move(other.g)} {};
       ~Graph<N, E>() = default;
 
       bool InsertNode(const N&);
@@ -324,7 +329,7 @@ namespace gdwg {
 
 
 
-#include "assignments/dg/graph.cpp"
+#include "assignments/dg/graph.tpp"
 // #include "graph.cpp"
 
 #endif  // ASSIGNMENTS_DG_GRAPH_H_
