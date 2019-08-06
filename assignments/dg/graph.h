@@ -134,6 +134,7 @@ namespace gdwg {
       }
       std::vector<N> GetNeighbours() const;
       std::vector<E> GetWeights(const N& v) const;
+      const_iterator find(const N&, const E&) const;
 
       int GetSize() const {
         int ret = 0;
@@ -264,6 +265,8 @@ namespace gdwg {
       bool IsConnected(const N&, const N&) const;
       std::vector<N> GetConnected(const N&) const;
       std::vector<E> GetWeights(const N&, const N&) const;
+      const_iterator find(const N&, const N&, const E&) const;
+
 
       // Friends
       friend bool operator==(const gdwg::Graph<N, E>& g1, const gdwg::Graph<N, E>& g2) {

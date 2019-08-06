@@ -104,6 +104,20 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& node) {
 }
 
 template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::find(const N& n1, const N& n2, const E& edge) const {
+  gdwg::shared_pointer_store<N> tmp(n1);
+  auto outerVal = g.find(tmp);
+  if (outerVal == g.end()) {
+    return cend();
+  }
+  auto innerVal = outerVal->second.find(n2, edge);
+  if (innerVal == outerVal->second.cend()) {
+    return cend();
+  }
+  return {outerVal, g.cbegin(), g.cend(), innerVal};
+}
+
+template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   if (this->g.cbegin() == this->g.cend()) {
     return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
@@ -163,6 +177,20 @@ typename gdwg::Graph<N, E>::const_iterator::reference gdwg::Graph<N, E>::const_i
 
 
 
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::find(const N& n, const E& e) const {
+  gdwg::shared_pointer_store<N> tmp(n);
+  const auto outerVal = list.find(tmp);
+  if (outerVal == list.end()) {
+    return cend();
+  }
+  shared_pointer_store<E> tmpE(e);
+  const auto innerVal = outerVal->second.find(tmpE);
+  if (innerVal == outerVal->second.end()) {
+    return cend();
+  }
+  return {outerVal, list.cbegin(), list.cend(), innerVal};
+}
 
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::cbegin() const {
@@ -232,9 +260,10 @@ std::vector<N> gdwg::AdjacencyList<N, E>::GetNeighbours() const {
   }
   return res;
 }
+
 template<typename N, typename E>
 std::vector<E> gdwg::AdjacencyList<N, E>::GetWeights(const N& node) const {
-  shared_pointer_store<N> v2 = shared_pointer_store<N>(node);
+  const gdwg::shared_pointer_store<N> v2(node);
   std::vector<E> res;
   const auto val = list.find(v2);
   if (val == list.end()) {

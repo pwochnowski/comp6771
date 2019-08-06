@@ -50,6 +50,15 @@ TEST_CASE("Methods") {
     REQUIRE(g.numNodes() == 0);
   }
 
+  SECTION("find") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    auto val = g.find(std::string("hello"), std::string("how"), 5);
+    auto exp = std::make_tuple(std::string("hello"), std::string("how"), 5);
+    auto expPrev = std::make_tuple(std::string("hello"), std::string("are"), 8);
+    REQUIRE(*val == exp);
+    REQUIRE(*(--val) == expPrev);
+  }
+
   SECTION("IsNode") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     REQUIRE(g.IsNode(std::string("hello")));
@@ -73,7 +82,7 @@ TEST_CASE("Methods") {
 
   }
 
-   SECTION("GetConnected") {
+  SECTION("GetWeights") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     auto weights = g.GetWeights("hello", "are");
     REQUIRE(weights.size() == 2);
