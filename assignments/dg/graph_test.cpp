@@ -1,10 +1,15 @@
 /*
 
   == Explanation and rational of testing ==
+  We designed tests by checking the return values of non-void functions,
+  as well as using helper functions to check the internal state of the Graph
+  to ensure that only desirable changes have occurred.
 
-  Explain and justify how you approached testing, the degree
-   to which you're certain you have covered all possibilities,
-   and why you think your tests are that thorough.
+  To ensure test coverage we have tests for every function in the spec and
+  test it with as many differing return values as possible
+
+
+  We test exceptions with REQUIRE_THROWS_WITH and REQUIRE_THROWS_AS
 
 */
 
@@ -14,7 +19,6 @@
 #include "assignments/dg/graph.h"
 #include "catch.h"
 
-// TODO(students): Fill this in.
 template<typename N, typename E>
 void printValue(std::tuple<N, N, E> val) {
   std::cout << std::get<0>(val) << " " << std::get<1>(val)<< " " << std::get<2>(val) << "\n";
@@ -99,6 +103,36 @@ TEST_CASE("Constructors") {
   }
 }
 
+TEST_CASE("Assignment") {
+  SECTION("copy assignment") {
+    gdwg::Graph<int, int> g{1, 2, 3};
+    auto copy = g;
+    REQUIRE(copy.numNodes() == 3);
+    REQUIRE(copy.numEdges() == 0);
+    REQUIRE(copy.IsNode(1));
+    REQUIRE(copy.IsNode(2));
+    REQUIRE(copy.IsNode(3));
+  }
+
+  SECTION("move assignment") {
+    std::vector<std::tuple<int, int, int>> v = {{1, 2, 0}, {1, 3, 1}, {2, 3, 2}};
+    gdwg::Graph<int, int> g{v.begin(), v.end()};
+    auto g2 = std::move(g);
+    REQUIRE(!g.IsNode(1));
+    REQUIRE(!g.IsNode(2));
+    REQUIRE(!g.IsNode(3));
+    REQUIRE(g.find(1, 2, 0) == g.cend());
+    REQUIRE(g.find(1, 3, 1) == g.cend());
+    REQUIRE(g.find(2, 3, 2) == g.cend());
+    REQUIRE(g2.IsNode(1));
+    REQUIRE(g2.IsNode(2));
+    REQUIRE(g2.IsNode(3));
+    REQUIRE(g2.find(1, 2, 0) != g.cend());
+    REQUIRE(g2.find(1, 3, 1) != g.cend());
+    REQUIRE(g2.find(2, 3, 2) != g.cend());
+  }
+}
+
 TEST_CASE("Methods") {
   SECTION("clear graph") {
     gdwg::Graph<std::string, int> g = sampleGraph();
@@ -110,6 +144,54 @@ TEST_CASE("Methods") {
     REQUIRE(g.numNodes() == 0);
   }
 
+  SECTION("InsertNode") {
+    gdwg::Graph<int, int> g;
+    int i = 1;
+    THEN("insert once") {
+      REQUIRE(g.InsertNode(i));
+      REQUIRE(g.IsNode(i));
+      REQUIRE(g.numNodes() == 1);
+    }
+    THEN("insert twice") {
+      REQUIRE(g.InsertNode(i));
+      REQUIRE(!g.InsertNode(i));
+      REQUIRE(g.IsNode(i));
+      REQUIRE(g.numNodes() == 1);
+    }
+  }
+
+  SECTION("InsertEdge") {
+    gdwg::Graph<int, int> g;
+    int a = 1;
+    int b = 2;
+    g.InsertNode(a);
+    g.InsertNode(b);
+    REQUIRE(g.numEdges() == 0);
+    THEN("insert single edge") {
+      REQUIRE(g.InsertEdge(a, b, 0));
+      REQUIRE(g.numNodes() == 2);
+      REQUIRE(g.numEdges() == 1);
+    }
+    THEN("insert reflexive edge") {
+      REQUIRE(g.InsertEdge(a, a, 0));
+      REQUIRE(g.numNodes() == 2);
+      REQUIRE(g.numEdges() == 1);
+    }
+    THEN("insert same edge twice") {
+      REQUIRE(g.InsertEdge(a, b, 0));
+      REQUIRE(!g.InsertEdge(a, b, 0));
+    }
+    THEN("insert edge to nonexistent node") {
+      const auto err = "Cannot call Graph::InsertEdge when either src or dst node does not exist";
+      REQUIRE_THROWS_AS(g.InsertEdge(5, 4, 0), std::runtime_error);
+      REQUIRE_THROWS_AS(g.InsertEdge(a, 5, 0), std::runtime_error);
+      REQUIRE_THROWS_AS(g.InsertEdge(4, b, 0), std::runtime_error);
+      REQUIRE_THROWS_WITH(g.InsertEdge(5, 4, 0), err);
+      REQUIRE_THROWS_WITH(g.InsertEdge(a, 5, 0), err);
+      REQUIRE_THROWS_WITH(g.InsertEdge(4, b, 0), err);
+    }
+  }
+
   SECTION("erase") {
     GIVEN("a graph") {
       gdwg::Graph<std::string, int> g = sampleGraph();
@@ -117,12 +199,6 @@ TEST_CASE("Methods") {
       THEN("standard case") {
         auto val = g.erase(g.find(std::string("hello"), std::string("are"), 2));
         auto exp = std::make_tuple(std::string("hello"), std::string("are"), 8);
-        REQUIRE(*val == exp);
-      }
-
-      THEN("deleting the last edge of the first of two neighbour") {
-        auto val = g.erase(g.find(std::string("hello"), std::string("are"), 8));
-        auto exp = std::make_tuple(std::string("hello"), std::string("how"), 5);
         REQUIRE(*val == exp);
       }
 
@@ -153,6 +229,7 @@ TEST_CASE("Methods") {
     auto expPrev = std::make_tuple(std::string("hello"), std::string("are"), 8);
     REQUIRE(*val == exp);
     REQUIRE(*(--val) == expPrev);
+    REQUIRE(g.find(std::string("hello"), std::string("how"), 9000) == g.cend());
   }
 
   SECTION("IsNode") {
@@ -163,8 +240,16 @@ TEST_CASE("Methods") {
 
   SECTION("IsConnected") {
     gdwg::Graph<std::string, int> g = sampleGraph();
+    const auto error_msg =
+        "Cannot call Graph::IsConnected if src or dst node don't exist in the graph";
     REQUIRE(g.IsConnected(std::string("hello"), std::string("are")));
     REQUIRE(!g.IsConnected(std::string("are"), std::string("hello")));
+    REQUIRE_THROWS_WITH(g.IsConnected("haha", "hello"), error_msg);
+    REQUIRE_THROWS_AS(g.IsConnected("haha", "hello"), std::runtime_error);
+    REQUIRE_THROWS_WITH(g.IsConnected("are", "haha"), error_msg);
+    REQUIRE_THROWS_AS(g.IsConnected("are", "haha"), std::runtime_error);
+    REQUIRE_THROWS_WITH(g.IsConnected("haha", "haha"), error_msg);
+    REQUIRE_THROWS_AS(g.IsConnected("haha", "haha"), std::runtime_error);
   }
 
   SECTION("GetConnected") {
@@ -178,6 +263,13 @@ TEST_CASE("Methods") {
 
   }
 
+  SECTION("GetNodes") {
+    gdwg::Graph<std::string, int> g;
+    REQUIRE(g.GetNodes().empty());
+    g = sampleGraph();
+    REQUIRE(g.GetNodes().size() == 4);
+  }
+
   SECTION("GetWeights") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     auto weights = g.GetWeights("hello", "are");
@@ -189,29 +281,26 @@ TEST_CASE("Methods") {
 
   }
 
-  SECTION("delete node") {
+  SECTION("Clear") {
+    gdwg::Graph<int, int> g;
+    g.InsertNode(1);
+    g.InsertNode(2);
+    g.InsertEdge(1, 2, 0);
+    g.Clear();
+    REQUIRE(g.numNodes() == 0);
+    REQUIRE(g.numEdges() == 0);
+  }
+
+  SECTION("DeleteNode") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     int oldN = g.numNodes();
     int oldE = g.numEdges();
-    g.DeleteNode("are");
+    REQUIRE(g.DeleteNode("are"));
     REQUIRE(g.numNodes() == oldN-1);
     REQUIRE(g.numEdges() == oldE-3);
-  }
-}
-
-TEST_CASE("friends") {
-  SECTION("equals") {
-    GIVEN("a graph") {
-      gdwg::Graph<std::string, int> g = sampleGraph();
-      THEN("Check equality holds for a copy constructed graph") {
-        gdwg::Graph<std::string, int> gCopy(sampleGraph());
-        REQUIRE(g == gCopy);
-      }
-      THEN("Check equality fails with empty graph") {
-        gdwg::Graph<std::string, int> empty;
-        REQUIRE(g != empty);
-      }
-    }
+    REQUIRE(!g.DeleteNode("are"));
+    REQUIRE(g.numNodes() == oldN-1);
+    REQUIRE(g.numEdges() == oldE-3);
   }
 }
 
@@ -221,6 +310,19 @@ TEST_CASE("iterators") {
     auto b = g.cbegin();
     auto e = g.cend();
     REQUIRE(b == e);
+  }
+
+  SECTION("comparison") {
+    auto val1 = std::make_tuple<int, int, int>(1, 2, 1);
+    auto val2 = std::make_tuple<int, int, int>(2, 3, 2);
+    std::vector<std::tuple<int, int, int>> v{val1, val2};
+    gdwg::Graph<int, int> g{v.begin(), v.end()};
+    gdwg::Graph<int, int> g2{v.begin(), v.end()};
+    REQUIRE(g.begin() == g.begin());
+    REQUIRE(g.end() == g.end());
+    REQUIRE(g.begin() != g2.begin());
+    REQUIRE(g.end() != g2.end());
+
   }
 
   SECTION("increment/decrement iterators") {
@@ -295,5 +397,27 @@ TEST_CASE("iterators") {
         REQUIRE(*lastValid == *it1);
       }
     }
+  }
+}
+
+TEST_CASE("friends") {
+  SECTION("equals") {
+    GIVEN("a graph") {
+      gdwg::Graph<std::string, int> g = sampleGraph();
+      THEN("Check equality holds for a copy constructed graph") {
+        gdwg::Graph<std::string, int> gCopy(sampleGraph());
+        REQUIRE(g == gCopy);
+      }
+      THEN("Check equality fails with empty graph") {
+        gdwg::Graph<std::string, int> empty;
+        REQUIRE(g != empty);
+      }
+    }
+  }
+
+  SECTION("ostream") {
+    gdwg::Graph<std::string, int>g = sampleGraph();
+    std::cout<<g;
+
   }
 }
