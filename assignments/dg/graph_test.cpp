@@ -50,6 +50,51 @@ TEST_CASE("Methods") {
     REQUIRE(g.numNodes() == 0);
   }
 
+  SECTION("erase") {
+    GIVEN("a graph") {
+      gdwg::Graph<std::string, int> g = sampleGraph();
+
+      THEN("standard case") {
+        auto val = g.erase(std::string("hello"), std::string("are"), 2);
+        auto exp = std::make_tuple(std::string("hello"), std::string("are"), 8);
+        REQUIRE(*val == exp);
+      }
+
+      THEN("deleting the last edge of the first of two neighbour") {
+        auto val = g.erase(std::string("hello"), std::string("are"), 8);
+        auto exp = std::make_tuple(std::string("hello"), std::string("how"), 5);
+        REQUIRE(*val == exp);
+      }
+
+      THEN("deleting the only edge of the second of two neighbours") {
+        auto val = g.erase(std::string("hello"), std::string("how"), 5);
+        auto exp = std::make_tuple(std::string("how"), std::string("hello"), 4);
+        auto expPrev = std::make_tuple(std::string("hello"), std::string("are"), 8);
+        REQUIRE(*val == exp);
+        REQUIRE(*(--val) == expPrev);
+      }
+
+      THEN("deleting the last edge of last vertex") {
+        g.DeleteNode(std::string("you?"));
+        auto val = g.erase(std::string("how"), std::string("hello"), 4);
+        auto exp = g.cend();
+        REQUIRE(val == exp);
+        --val;
+        auto expPrev = std::make_tuple(std::string("hello"), std::string("how"), 5);
+        REQUIRE(*val == expPrev);
+      }
+    }
+  }
+
+  SECTION("find") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    auto val = g.find(std::string("hello"), std::string("how"), 5);
+    auto exp = std::make_tuple(std::string("hello"), std::string("how"), 5);
+    auto expPrev = std::make_tuple(std::string("hello"), std::string("are"), 8);
+    REQUIRE(*val == exp);
+    REQUIRE(*(--val) == expPrev);
+  }
+
   SECTION("IsNode") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     REQUIRE(g.IsNode(std::string("hello")));
@@ -60,6 +105,28 @@ TEST_CASE("Methods") {
     gdwg::Graph<std::string, int> g = sampleGraph();
     REQUIRE(g.IsConnected(std::string("hello"), std::string("are")));
     REQUIRE(!g.IsConnected(std::string("are"), std::string("hello")));
+  }
+
+  SECTION("GetConnected") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    auto neighbours = g.GetConnected("hello");
+    REQUIRE(neighbours.size() == 2);
+    REQUIRE(neighbours[0] == "are");
+    REQUIRE(neighbours[1] == "how");
+    neighbours = g.GetConnected("you?");
+    REQUIRE(neighbours.size() == 0);
+
+  }
+
+  SECTION("GetWeights") {
+    gdwg::Graph<std::string, int> g = sampleGraph();
+    auto weights = g.GetWeights("hello", "are");
+    REQUIRE(weights.size() == 2);
+    REQUIRE(weights[0] == 2);
+    REQUIRE(weights[1] == 8);
+    weights = g.GetWeights("hello", "you?");
+    REQUIRE(weights.size() == 0);
+
   }
 
   SECTION("delete node") {
