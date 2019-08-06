@@ -231,6 +231,7 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<
   const N& n2 = std::get<1>(val);
   const E&  e = std::get<2>(val);
   auto it = find(n1, n2, e);
+  // auto it = find(n1, n2, e);
   if (find(n1, n2, e) == cend()) {
     return cend();
   }
