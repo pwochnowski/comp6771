@@ -230,6 +230,7 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<
   const N& n1 = std::get<0>(val);
   const N& n2 = std::get<1>(val);
   const E&  e = std::get<2>(val);
+  // auto it = find(n1, n2, e);
   if (find(n1, n2, e) == cend()) {
     return cend();
   }
@@ -240,16 +241,17 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<
     return cend();
   }
   auto innerVal = outerVal->second.erase(n2, e);
-  // std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
-  if (innerVal == outerVal->second.cend()) {
+  std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
+  while (innerVal == outerVal->second.cend()) {
     outerVal++;
-    if (outerVal == g.end()) {
-      // std::cout<<"reached end\n";
+    if (outerVal == g.cend()) {
+      std::cout<<"return cend\n";
       return cend();
     }
-    // std::cout<<"moved to next node in graph now at: "<< *(outerVal->first.ptr_)<<std::endl;
+    std::cout<<"moved to next node in graph now at: "<< *(outerVal->first.ptr_)<<std::endl;
     innerVal = outerVal->second.cbegin();
   }
+  std::cout<<"return normally\n";
   return {outerVal, g.cbegin(), g.cend(), innerVal};
 }
 
