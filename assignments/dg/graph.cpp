@@ -118,6 +118,26 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::find(const N& n1, 
 }
 
 template<typename N, typename E>
+typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(const N& n1, const N& n2, const E& edge) {
+  gdwg::shared_pointer_store<N> tmp(n1);
+  auto outerVal = g.find(tmp);
+  if (outerVal == g.end()) {
+    return cend();
+  }
+  auto innerVal = outerVal->second.erase(n2, edge);
+  // std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
+  if (innerVal == outerVal->second.cend()) {
+    outerVal++;
+    // std::cout<<"currently "<< *(outerVal->first.ptr_)<<std::endl;
+    if (outerVal == g.cend()) {
+      return cend();
+    }
+    innerVal = outerVal->second.cbegin();
+  }
+  return {outerVal, g.cbegin(), g.cend(), innerVal};
+}
+
+template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   if (this->g.cbegin() == this->g.cend()) {
     return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
@@ -138,7 +158,7 @@ template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::operator++() {
   // std::cout<<"Incrementing graph inner"<<std::endl;
   ++inner_;
-  if (inner_ == outer_->second.cend()) {
+  while (inner_ == outer_->second.cend()) {
     // std::cout<<"Incrementing graph outer"<<std::endl;
     ++outer_;
     if (outer_ != backSentinel_) {
@@ -155,7 +175,7 @@ typename gdwg::Graph<N, E>::const_iterator& gdwg::Graph<N, E>::const_iterator::o
   if (outer_ == backSentinel_) {
     outer_--;
   }
-  if (inner_ == outer_->second.cbegin()) {
+  while (inner_ == outer_->second.cbegin()) {
     if (outer_ != frontSentinel_) {
       --outer_;
       inner_ = outer_->second.cend();
@@ -172,11 +192,6 @@ typename gdwg::Graph<N, E>::const_iterator::reference gdwg::Graph<N, E>::const_i
   return {*(outer_->first.ptr_), std::get<0>(neighbor), std::get<1>(neighbor)};
 }
 
-
-
-
-
-
 template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::find(const N& n, const E& e) const {
   gdwg::shared_pointer_store<N> tmp(n);
@@ -190,6 +205,42 @@ typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::fi
     return cend();
   }
   return {outerVal, list.cbegin(), list.cend(), innerVal};
+}
+
+template<typename N, typename E>
+typename gdwg::AdjacencyList<N, E>::const_iterator gdwg::AdjacencyList<N, E>::erase(const N& n, const E& e) {
+  gdwg::shared_pointer_store<N> tmp(n);
+  auto outerVal = list.find(tmp);
+  if (outerVal == list.end()) {
+    return cend();
+  }
+  shared_pointer_store<E> tmpE(e);
+  auto innerVal = outerVal->second.find(tmpE);
+  if (innerVal == outerVal->second.end()) {
+    return cend();
+  }
+  // std::cout<<"Found edge to "<<*(outerVal->first.ptr_)<< std::endl;
+  // std::cout<<"Current inner val: "<<*(innerVal->ptr_)<<std::endl;
+  typename std::set<shared_pointer_store<E> >::const_iterator nextInnerVal = outerVal->second.erase(innerVal);
+  auto nextOuterVal = outerVal;
+  if (nextInnerVal == outerVal->second.end()) {
+    if (outerVal->second.size() == 0) {
+      // Check if outer is empty
+      nextOuterVal = list.erase(outerVal);
+      // std::cout<<"deleted empty set, next val: "<< *(nextOuterVal->first.ptr_)<<std::endl;
+    } else {
+      // std::cout<<"set still has elements remaining"<<std::endl;
+      // Still increment outer
+      nextOuterVal = ++outerVal;
+    }
+    if (nextOuterVal == list.end()) {
+      // std::cout<<"at end of list\n"<<std::endl;
+      return cend();
+    }
+    nextInnerVal = nextOuterVal->second.cbegin();
+  }
+  // std::cout<<"Next inner val: "<<(*nextInnerVal->ptr_)<<std::endl;
+  return {nextOuterVal, list.cbegin(), list.cend(), nextInnerVal};
 }
 
 template<typename N, typename E>
@@ -213,7 +264,7 @@ template<typename N, typename E>
 typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::const_iterator::operator++() {
   // std::cout<<"Incrementing list inner\n";
   ++inner_;
-  if (inner_ == outer_->second.cend()) {
+  while (inner_ == outer_->second.cend()) {
     // std::cout<<"incrementing list outer"<<std::endl;
     ++outer_;
     if (outer_ != backSentinel_) {
@@ -230,7 +281,7 @@ typename gdwg::AdjacencyList<N, E>::const_iterator& gdwg::AdjacencyList<N, E>::c
   if (outer_ == backSentinel_) {
     outer_--;
   }
-  if (inner_ == outer_->second.cbegin()) {
+  while (inner_ == outer_->second.cbegin()) {
     if (outer_ != frontSentinel_) {
       --outer_;
       inner_ = outer_->second.cend();

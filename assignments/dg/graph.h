@@ -135,6 +135,7 @@ namespace gdwg {
       std::vector<N> GetNeighbours() const;
       std::vector<E> GetWeights(const N& v) const;
       const_iterator find(const N&, const E&) const;
+      const_iterator erase(const N&, const E&);
 
       int GetSize() const {
         int ret = 0;
@@ -266,6 +267,13 @@ namespace gdwg {
       std::vector<N> GetConnected(const N&) const;
       std::vector<E> GetWeights(const N&, const N&) const;
       const_iterator find(const N&, const N&, const E&) const;
+      const_iterator erase(const N&, const N&, const E&);
+      const_iterator erase(gdwg::Graph<N,E>::const_iterator& it) {
+        // probs should do error checking here
+        auto val = *it;
+        return erase(std::get<0>(val), std::get<1>(val), std::get<2>(val));
+      }
+
 
 
       // Friends
