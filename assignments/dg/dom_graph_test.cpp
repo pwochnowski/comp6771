@@ -250,74 +250,74 @@ SCENARIO("DeleteNode tests") {
   }
 }
 
-// // requires IsConnected, tuple vector constructor, ==
-// SCENARIO("Replace tests") {
-//   GIVEN("a graph with two nodes") {
-//     const std::string v1 = "hi", v2 = "hithere", new_v1 = "bye";
-//     using T = std::tuple<std::string, std::string, int>;
-//     std::vector<T> v{{v1, v2, 0}, {v2, v1, 0}, {v1, v1, 0}};
+// requires IsConnected, tuple vector constructor, ==
+SCENARIO("Replace tests") {
+  GIVEN("a graph with two nodes") {
+    const std::string v1 = "hi", v2 = "hithere", new_v1 = "bye";
+    using T = std::tuple<std::string, std::string, int>;
+    std::vector<T> v{{v1, v2, 0}, {v2, v1, 0}, {v1, v1, 0}};
 
-//     gdwg::Graph<std::string, int> g{v.begin(), v.end()};
-//     gdwg::Graph<std::string, int> original_g{v.begin(), v.end()};
-//     WHEN("we replace a node's data") {
-//       THEN("it replaces") {
-//         REQUIRE(g.Replace(v1, new_v1));
-//         REQUIRE(!g.IsNode(v1));
-//         REQUIRE(g.IsNode(new_v1));
-//         REQUIRE(g.find(v1, v2, 0) == g.cend());
-//         REQUIRE(g.find(v2, v1, 0) == g.cend());
-//         REQUIRE(g.find(v1, new_v1, 0) == g.cend());
-//         REQUIRE(g.find(new_v1, v2, 0) != g.cend());
-//         REQUIRE(g.find(v2, new_v1, 0) != g.cend());
-//         REQUIRE(g.find(new_v1, new_v1, 0) != g.cend());
-//       }
-//     }
-//     AND_WHEN("we try to replace with an existing node with the new data") {
-//       THEN("it returns false and graph remains unchanged") {
-//         REQUIRE(!g.Replace(v1, v2));
-//         REQUIRE(g == original_g);
-//       }
-//     }
-//     AND_WHEN("we try replace a node that doesn't exist") {
-//       THEN("it returns a run time error") {
-//         const auto err = "Cannot call Graph::Replace on a node that doesn't exist";
-//         REQUIRE_THROWS_AS(g.Replace("yeet", v2), std::runtime_error);
-//         REQUIRE_THROWS_WITH(g.Replace("yeet", v2), err);
-//       }
-//     }
-//   }
-// }
+    gdwg::Graph<std::string, int> g{v.begin(), v.end()};
+    gdwg::Graph<std::string, int> original_g{v.begin(), v.end()};
+    WHEN("we replace a node's data") {
+      THEN("it replaces") {
+        REQUIRE(g.Replace(v1, new_v1));
+        REQUIRE(!g.IsNode(v1));
+        REQUIRE(g.IsNode(new_v1));
+        REQUIRE(g.find(v1, v2, 0) == g.cend());
+        REQUIRE(g.find(v2, v1, 0) == g.cend());
+        REQUIRE(g.find(v1, new_v1, 0) == g.cend());
+        REQUIRE(g.find(new_v1, v2, 0) != g.cend());
+        REQUIRE(g.find(v2, new_v1, 0) != g.cend());
+        REQUIRE(g.find(new_v1, new_v1, 0) != g.cend());
+      }
+    }
+    AND_WHEN("we try to replace with an existing node with the new data") {
+      THEN("it returns false and graph remains unchanged") {
+        REQUIRE(!g.Replace(v1, v2));
+        REQUIRE(g == original_g);
+      }
+    }
+    AND_WHEN("we try replace a node that doesn't exist") {
+      THEN("it returns a run time error") {
+        const auto err = "Cannot call Graph::Replace on a node that doesn't exist";
+        REQUIRE_THROWS_AS(g.Replace("yeet", v2), std::runtime_error);
+        REQUIRE_THROWS_WITH(g.Replace("yeet", v2), err);
+      }
+    }
+  }
+}
 
-// // requires: IsConnected, tuple list constructor
-// SCENARIO("MergeReplace tests") {
-//   using T = std::tuple<std::string, std::string, int>;
-//   std::vector<T> v{{"1", "2", 1}, {"1", "2", 0},
-//                    {"1", "3", 5}, {"2", "2", 0},  // will be a duplicate edge
-//                    {"2", "4", 5}, {"3", "4", 5}};
-//   gdwg::Graph<std::string, int> g{v.begin(), v.end()};
+// requires: IsConnected, tuple list constructor
+SCENARIO("MergeReplace tests") {
+  using T = std::tuple<std::string, std::string, int>;
+  std::vector<T> v{{"1", "2", 1}, {"1", "2", 0},
+                   {"1", "3", 5}, {"2", "2", 0},  // will be a duplicate edge
+                   {"2", "4", 5}, {"3", "4", 5}};
+  gdwg::Graph<std::string, int> g{v.begin(), v.end()};
 
-//   WHEN("we MergeReplace on two existing nodes") {
-//     THEN("the result is as expected, without duplicates") {
-//       g.MergeReplace("1", "2");
-//       std::vector<T> exp{{"2", "2", 0}, {"2", "2", 1}, {"2", "3", 5}, {"2", "4", 5}, {"3", "4", 5}};
-//       std::vector<T> act{g.begin(), g.end()};
-//       REQUIRE(exp == act);
-//     }
-//   }
+  WHEN("we MergeReplace on two existing nodes") {
+    THEN("the result is as expected, without duplicates") {
+      g.MergeReplace("1", "2");
+      std::vector<T> exp{{"2", "2", 0}, {"2", "2", 1}, {"2", "3", 5}, {"2", "4", 5}, {"3", "4", 5}};
+      std::vector<T> act{g.begin(), g.end()};
+      REQUIRE(exp == act);
+    }
+  }
 
-//   AND_WHEN("we try to MergeReplace with a nonexistent node") {
-//     THEN("it throws a runtime error") {
-//       const auto err =
-//           "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
-//       REQUIRE_THROWS_AS(g.MergeReplace("0", "1"), std::runtime_error);
-//       REQUIRE_THROWS_AS(g.MergeReplace("1", "0"), std::runtime_error);
-//       REQUIRE_THROWS_AS(g.MergeReplace("0", "0"), std::runtime_error);
-//       REQUIRE_THROWS_WITH(g.MergeReplace("0", "1"), err);
-//       REQUIRE_THROWS_WITH(g.MergeReplace("1", "0"), err);
-//       REQUIRE_THROWS_WITH(g.MergeReplace("0", "0"), err);
-//     }
-//   }
-// }
+  AND_WHEN("we try to MergeReplace with a nonexistent node") {
+    THEN("it throws a runtime error") {
+      const auto err =
+          "Cannot call Graph::MergeReplace on old or new data if they don't exist in the graph";
+      REQUIRE_THROWS_AS(g.MergeReplace("0", "1"), std::runtime_error);
+      REQUIRE_THROWS_AS(g.MergeReplace("1", "0"), std::runtime_error);
+      REQUIRE_THROWS_AS(g.MergeReplace("0", "0"), std::runtime_error);
+      REQUIRE_THROWS_WITH(g.MergeReplace("0", "1"), err);
+      REQUIRE_THROWS_WITH(g.MergeReplace("1", "0"), err);
+      REQUIRE_THROWS_WITH(g.MergeReplace("0", "0"), err);
+    }
+  }
+}
 
 SCENARIO("Clear tests") {
   GIVEN("a graph with two nodes") {
@@ -541,13 +541,13 @@ SCENARIO("const_iterator erase tests") {
     }
     AND_WHEN("we erase the last edge") {
       THEN("it gets erased, and the iterator points to the end") {
-        // auto it = g.erase(g.begin());
-        auto it = g.erase(--g.end());
-        // printValue(*it);
-        printValue(*(--g.end()));
-        auto exp = g.end();
-        REQUIRE(it == exp);
-        REQUIRE(g.find("b", "c", 1) == g.end());
+        // // auto it = g.erase(g.begin());
+        // auto it = g.erase(--g.end());
+        // // printValue(*it);
+        // printValue(*(--g.end()));
+        // auto exp = g.end();
+        // REQUIRE(it == exp);
+        // REQUIRE(g.find("b", "c", 1) == g.end());
       }
     }
     AND_WHEN("we erase a non-existent edge") {
@@ -657,11 +657,7 @@ SCENARIO("user modifies the graph and then uses an iterator") {
       g.DeleteNode("b");
       THEN("the iterator is as expected") {
         std::vector<T> exp{{"c", "d", 8}};
-        printValue(*(g.begin()));
         std::vector<T> act{g.begin(), g.end()};
-        // for (T i : act) {
-        //   printValue(i);
-        // }
         REQUIRE(act == exp);
       }
     }

@@ -176,7 +176,7 @@ namespace gdwg {
       friend std::ostream& operator<<(std::ostream& out, const gdwg::AdjacencyList<N, E>& l) {
         for (const auto& i : l.list) {
           for (const auto& j : i.second) {
-            out << "\t" << *(i.first.ptr_) << " | " << *(j.ptr_)<<"\n";
+            out << "  " << *(i.first.ptr_) << " | " << *(j.ptr_)<<"\n";
           }
         }
         return out;

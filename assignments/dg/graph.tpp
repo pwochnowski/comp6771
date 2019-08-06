@@ -258,10 +258,13 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::cbegin() const {
   if (this->g.cbegin() == this->g.cend()) {
-    std::cout<<"List empty yo\n";
     return {this->g.cend(), this->g.cend(), this->g.cend(), {}};
   }
-  return {this->g.cbegin(), this->g.cbegin(), this->g.cend(), this->g.cbegin()->second.cbegin()};
+  auto it = g.cbegin();
+  while (it != g.cend() && it->second.GetSize() == 0) {
+    it++;
+  }
+  return {it, it, this->g.cend(), it->second.cbegin()};
 }
 
 template<typename N, typename E>
