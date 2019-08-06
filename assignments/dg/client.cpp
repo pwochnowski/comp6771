@@ -48,16 +48,17 @@ int main() {
   decltype(g)::const_iterator it = g.cbegin();
 
 
-  g.erase(it);
-  std::cout << '\n';
-  std::cout << g << '\n';
-
+//  g.erase(it);
+//  std::cout << '\n';
+//  std::cout << g << '\n';
 
 
 
   auto val = *it;
   std::cout << std::get<0>(val) << " " << std::get<1>(val)<< " " << std::get<2>(val) << "\n";
+  //std::cout << "boop0 \n";
   it++;
+  //std::cout << "boop0 \n";
   // auto v2 = *it;
   // std::cout << std::get<0>(v2) << " " << std::get<1>(v2)<< " " << std::get<2>(v2) << "\n";
 
@@ -73,4 +74,34 @@ int main() {
   // }
   //  g.Replace("are", "4re");
   //  std::cout << g << '\n';
+
+  g.Clear();
+  g.InsertNode("a");
+  g.InsertNode("b");
+  g.InsertNode("c");
+  g.InsertEdge("a", "b", 1);
+  g.InsertEdge("b", "c", 1);
+
+  //std::cout << "boop1 \n";
+  decltype(g)::const_iterator it_2 = g.erase(--g.end());
+  //std::cout << std::get<0>(*(--g.end())) << "\n";
+  //std::cout << "boop2 \n";
+  std::cout << (it_2 == g.end()) << "\n";
+  //std::cout << "boop3 \n";
+  decltype(g)::const_iterator it_3 = g.find("b", "c", 1);
+  std::cout << (it_3 == g.end()) << "\n";
+
+
+  std::cout << g << '\n';
+
+  g.Clear();
+  const std::string v1 = "hen", v2 = "forward", v3 = "turkey";
+  g.InsertNode(v1);
+  g.InsertNode(v2);
+  g.InsertNode(v3);
+  g.InsertEdge(v1, v3, 0);
+  std::cout << g << '\n';
+  g.erase(v1, v3, 0);
+  std::cout << g << '\n';
+  std::cout << !g.IsConnected(v1, v3) << '\n';
 }

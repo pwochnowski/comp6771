@@ -131,12 +131,22 @@ template<typename N, typename E>
 bool gdwg::Graph<N,E>::Replace(const N& oldData, const N& newData) {
   shared_pointer_store<N> old_pointer = shared_pointer_store<N>(oldData);
   shared_pointer_store<N> new_pointer = shared_pointer_store<N>(newData);
+  if(this->g.count(old_pointer) == 0){
+      throw std::runtime_error("Cannot call Graph::Replace on a node that doesn't exist");
+  }
+
   //Check that newData is not already a node in the graph
   if (this->g.count(new_pointer) != 0) {
     return false;
   }
   //Copy the outgoing edges from the old node
   gdwg::AdjacencyList<N,E> l{this->g[old_pointer]};
+  //Special case for when old node is connected to itself
+  if(IsConnected(oldData, oldData)) {
+    gdwg::AdjacencyList<N,E> temp_list = this->g[old_pointer];
+    std::set<shared_pointer_store<E>> edge_weights = temp_list.GetEdgeSet(old_pointer);
+    l.SetEdgeSet(new_pointer, edge_weights);
+  }
   //Set the outgoing edges for the new node to be the same as the edges from the old node
   this->g[new_pointer] = l;
   //Go through all other nodes in graph, copy ingoing edges to old node to ingoing edges to new
@@ -162,9 +172,13 @@ bool gdwg::Graph<N,E>::Replace(const N& oldData, const N& newData) {
 
 template<typename N, typename E>
 void gdwg::Graph<N,E>::MergeReplace(const N& oldData, const N& newData) {
-  //TODO: Exception handling
   shared_pointer_store<N> old_pointer = shared_pointer_store<N>(oldData);
   shared_pointer_store<N> new_pointer = shared_pointer_store<N>(newData);
+  if(this->g.count(old_pointer) == 0 || this->g.count(new_pointer) == 0){
+      throw std::runtime_error("Cannot call Graph::MergeReplace on old or new data if they don't "
+                               "exist in the graph");
+  }
+
   //Iterate through neighbours of old node (nodes n where oldData -> n)
   for (auto& it : this->g[old_pointer].GetNeighbours()) {
     auto edge_set_old = g[old_pointer].GetEdgeSet(shared_pointer_store<N>(it));
@@ -462,7 +476,6 @@ void gdwg::AdjacencyList<N, E>::DeleteNode(const N& node) {
 
 
 template<typename N, typename E>
-
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<N,E>::const_iterator
   it) {
   if (it == cend()) {
@@ -477,11 +490,22 @@ typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::erase(gdwg::Graph<
   auto to = std::get<1>(edge);
   auto edge_weight = std::get<2>(edge);
 
+
+
   gdwg::AdjacencyList l = this->g[shared_pointer_store<N>(from)];
   std::set<shared_pointer_store<E> > old_edges = l.GetEdgeSet(shared_pointer_store<N>(to));
   old_edges.erase(shared_pointer_store<E>(edge_weight));
-  l.SetEdgeSet(shared_pointer_store<N>(to), old_edges);
+  //If erasing the edge disconnects the two nodes, then we need to remove the node "to" from the
+  //adjacency list of "from"
+  if(old_edges.size() == 0) {
+    l.DeleteNode(to);
+  } else {
+    l.SetEdgeSet(shared_pointer_store<N>(to), old_edges);
+  }
   this->g[shared_pointer_store<N>(from)] = l;
+
+
 
   return ret;
 }
+
