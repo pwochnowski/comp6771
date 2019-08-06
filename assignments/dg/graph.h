@@ -128,10 +128,7 @@ namespace gdwg {
         return *this;
       }
 
-      void DeleteNode(const N& node) {
-        shared_pointer_store<N> v(node);
-        list.erase(v);
-      };
+      void DeleteNode(const N& node);
       bool addEdge(const shared_pointer_store<N>&, const E&);
       bool hasEdge(const N& node) const {
         shared_pointer_store<N> v(node);

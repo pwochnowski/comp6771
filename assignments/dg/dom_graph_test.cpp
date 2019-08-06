@@ -537,15 +537,22 @@ SCENARIO("const_iterator erase tests") {
       THEN("it gets erased, and the iterator points to the next value") {
         REQUIRE(*(g.erase(g.begin())) == val2);
         REQUIRE(g.find("a", "b", 1) == g.cend());
-        auto it = g.erase(g.begin());
-        // auto it = g.erase(--g.end());
+      }
+    }
+    AND_WHEN("we erase the last edge") {
+      THEN("it gets erased, and the iterator points to the end") {
+        // auto it = g.erase(g.begin());
+        auto it = g.erase(--g.end());
+        printValue(*(--g.end()));
         auto exp = g.end();
         REQUIRE(it == exp);
         REQUIRE(g.find("b", "c", 1) == g.end());
       }
     }
     AND_WHEN("we erase a non-existent edge") {
-      THEN("it returns cend") { REQUIRE(g.erase(g.end()) == g.end()); }
+      THEN("it returns cend") {
+        REQUIRE(g.erase(g.end()) == g.end());
+      }
     }
   }
 }
@@ -567,7 +574,10 @@ SCENARIO("iterator basic usage") {
     }
     AND_WHEN("we iterate over the data type using begin, end") {
       std::vector<T> v2{g.begin(), g.end()};
-      THEN("the values are the same") { REQUIRE(v == v2); }
+
+      THEN("the values are the same") {
+        REQUIRE(v == v2);
+      }
     }
     AND_WHEN("we iterate over the data type using cbegin, cend") {
       std::vector<T> v2{g.cbegin(), g.cend()};
@@ -646,7 +656,11 @@ SCENARIO("user modifies the graph and then uses an iterator") {
       g.DeleteNode("b");
       THEN("the iterator is as expected") {
         std::vector<T> exp{{"c", "d", 8}};
+        printValue(*(g.begin()));
         std::vector<T> act{g.begin(), g.end()};
+        // for (T i : act) {
+        //   printValue(i);
+        // }
         REQUIRE(act == exp);
       }
     }
