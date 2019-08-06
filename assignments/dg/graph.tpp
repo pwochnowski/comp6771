@@ -178,7 +178,7 @@ void gdwg::Graph<N,E>::MergeReplace(const N& oldData, const N& newData) {
       //Make the new set equal to the old set
       edge_set_new = edge_set_old;
     }
-    g[new_pointer].SetEdgeSet(new_pointer, edge_set_new);
+    g[new_pointer].SetEdgeSet(shared_pointer_store<N>(it), edge_set_new);
   }
   //Iterate through nodes of the graph
   for (auto& it : this->g) {
