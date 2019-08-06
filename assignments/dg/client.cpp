@@ -24,6 +24,15 @@ int main() {
   g.InsertEdge("are", "you?", 3);
 
   std::cout << g << '\n';
+//  g.Replace("are", "ar");
+//  std::cout << g << '\n';
+//
+//  g.Replace("ar", "are");
+//  std::cout << g << '\n';
+
+  g.MergeReplace("how", "are");
+  std::cout << g << '\n';
+
   decltype(g)::const_iterator it = g.cbegin();
   auto val = *it;
   std::cout << std::get<0>(val) << " " << std::get<1>(val)<< " " << std::get<2>(val) << "\n";
@@ -41,5 +50,6 @@ int main() {
   // for (const auto& [from, to, weight] : g) {
   //   std::cout << from << " -> " << to << " (weight " << weight << ")\n";
   // }
-
+  //  g.Replace("are", "4re");
+  //  std::cout << g << '\n';
 }

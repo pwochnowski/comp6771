@@ -137,6 +137,15 @@ namespace gdwg {
         shared_pointer_store<N> v(node);
         return list.count(v) != 0;
       }
+
+      std::set<shared_pointer_store<E>> GetEdgeSet(const shared_pointer_store<N>& node) {
+        return list[node];
+      }
+      void SetEdgeSet(const shared_pointer_store<N>& node,
+          const std::set<shared_pointer_store<E>>& set) {
+        list[node]=set;
+      }
+
       std::vector<N> GetNeighbours() const;
       std::vector<E> GetWeights(const N& v) const;
       const_iterator find(const N&, const E&) const;

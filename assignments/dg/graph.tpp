@@ -127,7 +127,8 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& node) {
   return true;
 }
 
-bool Replace(const N& oldData, const N& newData) {
+template<typename N, typename E>
+bool gdwg::Graph<N,E>::Replace(const N& oldData, const N& newData) {
   shared_pointer_store<N> old_pointer = shared_pointer_store<N>(oldData);
   shared_pointer_store<N> new_pointer = shared_pointer_store<N>(newData);
   //Check that newData is not already a node in the graph
@@ -141,15 +142,17 @@ bool Replace(const N& oldData, const N& newData) {
   //Go through all other nodes in graph, copy ingoing edges to old node to ingoing edges to new
   //node
   for (auto& it : this->g) {
-    if (it == old_pointer || it == new_pointer) {
+    auto curr_node = it.first;
+    if (curr_node == old_pointer || curr_node == new_pointer) {
       continue;
     }
     //If there is an edge from current node to old node
-    if (IsConnected(*it, oldData)) {
+    if (IsConnected(*curr_node, oldData)) {
       //Get the set of edge weights from current node to old node
-      std::set<shared_pointer_store<E>> edge_weights = this->g[it]->list[oldData];
+      gdwg::AdjacencyList<N,E> temp_list = this->g[curr_node];
+      std::set<shared_pointer_store<E>> edge_weights = temp_list.GetEdgeSet(old_pointer);
       //Make edges from current node to new node with the same edge weights
-      this->g[it]->list[newData] = edge_weights;
+      this->g[curr_node].SetEdgeSet(new_pointer, edge_weights);
     }
   }
   //Delete the old node, along with all incoming and outgoing edges
@@ -157,43 +160,47 @@ bool Replace(const N& oldData, const N& newData) {
   return true;
 }
 
-void MergeReplace(const N& oldData, const N& newData) {
+template<typename N, typename E>
+void gdwg::Graph<N,E>::MergeReplace(const N& oldData, const N& newData) {
   //TODO: Exception handling
   shared_pointer_store<N> old_pointer = shared_pointer_store<N>(oldData);
   shared_pointer_store<N> new_pointer = shared_pointer_store<N>(newData);
   //Iterate through neighbours of old node (nodes n where oldData -> n)
-  for (auto& it : this->g[old_pointer]->list) {
-    //Check if these are already neighbours of the new node
-    if (this->g[new_pointer]->list.count(it) == 0) {
-      //If not, make them neighbours of the new node
-      this->g[new_pointer]->list[it] = g[old_pointer]->list[it];
+  for (auto& it : this->g[old_pointer].GetNeighbours()) {
+    auto edge_set_old = g[old_pointer].GetEdgeSet(shared_pointer_store<N>(it));
+    std::set<shared_pointer_store<E>> edge_set_new;
+    if (IsConnected(newData, it)) {
+      edge_set_new = g[new_pointer].GetEdgeSet(shared_pointer_store<N>(it));
+      //Merge the two edge sets
+      edge_set_new.insert(edge_set_old.begin(), edge_set_old.end());
+      //Set the edge set to the merged one
     } else {
-      //They are already neighbours, so we merge the edge weight lists
-      std::set<shared_pointer_store<E>> edge_weights = this->g[old_pointer]->list[it];
-      auto old_edge_list_start = edge_weights.begin();
-      auto old_edge_list_end = edge_weights.end();
-      this->g[new_pointer]->list[it].insert(old_edge_list_start, old_edge_list_end);
+      //Make the new set equal to the old set
+      edge_set_new = edge_set_old;
     }
+    g[new_pointer].SetEdgeSet(new_pointer, edge_set_new);
   }
   //Iterate through nodes of the graph
   for (auto& it : this->g) {
-    if (it == old_pointer || it == new_pointer) {
+    auto curr_node = it.first;
+    if (curr_node == old_pointer || curr_node == new_pointer) {
       continue;
     }
     //If there is an edge from current node to old node
-    if (IsConnected(*it, oldData)) {
+    if (IsConnected(*curr_node, oldData)) {
+      std::set<shared_pointer_store<E>> edge_set_new;
       //Get the set of edge weights from current node to old node
-      std::set<shared_pointer_store<E>> edge_weights = this->g[it]->list[oldData];
+      std::set<shared_pointer_store<E>> edge_set_old = this->g[curr_node].GetEdgeSet(old_pointer);
       //Make edges from current node to new node with the same edge weights
-      if (IsConnected(*it, newData)) {
+      if (IsConnected(*curr_node, newData)) {
         //If the node was already connected to the new node, then just merge the list of edges
-        auto old_edge_list_start = edge_weights.begin();
-        auto old_edge_list_end = edge_weights.end();
-        this->g[it]->list[newData].insert(old_edge_list_start, old_edge_list_end);
+        edge_set_new = this->g[curr_node].GetEdgeSet(new_pointer);
+        edge_set_new.insert(edge_set_old.begin(), edge_set_old.end());
       } else {
         //If the node wasn't connected to the new node, connect it
-        this->g[it]->list[newData] = edge_weights;
+        edge_set_new = edge_set_old;
       }
+      this->g[curr_node].SetEdgeSet(new_pointer, edge_set_new);
     }
   }
   DeleteNode(oldData);
