@@ -125,13 +125,56 @@ bool Replace(const N& oldData, const N& newData) {
     if (IsConnected(*it, oldData)) {
       //Get the set of edge weights from current node to old node
       std::set<shared_pointer_store<E>> edge_weights = this->g[it]->list[oldData];
-      this->g[it].erase(oldData);
       //Make edges from current node to new node with the same edge weights
       this->g[it]->list[newData] = edge_weights;
     }
   }
   //Delete the old node, along with all incoming and outgoing edges
   DeleteNode(oldData);
+  return true;
+}
+
+void MergeReplace(const N& oldData, const N& newData) {
+  //TODO: Exception handling
+  shared_pointer_store<N> old_pointer = shared_pointer_store<N>(oldData);
+  shared_pointer_store<N> new_pointer = shared_pointer_store<N>(newData);
+  //Iterate through neighbours of old node (nodes n where oldData -> n)
+  for (auto& it : this->g[old_pointer]->list) {
+    //Check if these are already neighbours of the new node
+    if (this->g[new_pointer]->list.count(it) == 0) {
+      //If not, make them neighbours of the new node
+      this->g[new_pointer]->list[it] = g[old_pointer]->list[it];
+    } else {
+      //They are already neighbours, so we merge the edge weight lists
+      std::set<shared_pointer_store<E>> edge_weights = this->g[old_pointer]->list[it];
+      auto old_edge_list_start = edge_weights.begin();
+      auto old_edge_list_end = edge_weights.end();
+      this->g[new_pointer]->list[it].insert(old_edge_list_start, old_edge_list_end);
+    }
+  }
+  //Iterate through nodes of the graph
+  for (auto& it : this->g) {
+    if (it == old_pointer || it == new_pointer) {
+      continue;
+    }
+    //If there is an edge from current node to old node
+    if (IsConnected(*it, oldData)) {
+      //Get the set of edge weights from current node to old node
+      std::set<shared_pointer_store<E>> edge_weights = this->g[it]->list[oldData];
+      //Make edges from current node to new node with the same edge weights
+      if (IsConnected(*it, newData)) {
+        //If the node was already connected to the new node, then just merge the list of edges
+        auto old_edge_list_start = edge_weights.begin();
+        auto old_edge_list_end = edge_weights.end();
+        this->g[it]->list[newData].insert(old_edge_list_start, old_edge_list_end);
+      } else {
+        //If the node wasn't connected to the new node, connect it
+        this->g[it]->list[newData] = edge_weights;
+      }
+    }
+  }
+  DeleteNode(oldData);
+  return;
 }
 
 template<typename N, typename E>

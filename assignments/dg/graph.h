@@ -269,6 +269,7 @@ namespace gdwg {
       bool InsertEdge(const N&, const N&, const E&);
       bool DeleteNode(const N&);
       bool Replace(const N& oldData, const N& newData);
+      void MergeReplace(const N& oldData, const N& newData);
       bool IsNode(const N&) const;
       void Clear();
       bool IsConnected(const N&, const N&) const;
