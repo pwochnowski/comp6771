@@ -20,3 +20,12 @@ cc_test(
         "//:catch",
     ],
 )
+
+cc_test(
+    name = "dom_graph_test",
+    srcs = ["dom_graph_test.cpp"],
+    deps = [
+        ":graph",
+        "//:catch",
+    ],
+)

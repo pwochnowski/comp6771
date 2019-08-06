@@ -132,7 +132,7 @@ namespace gdwg {
         shared_pointer_store<N> v(node);
         list.erase(v);
       };
-      void addEdge(const shared_pointer_store<N>&, const E&);
+      bool addEdge(const shared_pointer_store<N>&, const E&);
       bool hasEdge(const N& node) const {
         shared_pointer_store<N> v(node);
         return list.count(v) != 0;
@@ -237,7 +237,7 @@ namespace gdwg {
 
       };
       const_iterator begin() { return cbegin(); };
-      const_iterator end() { return end(); };
+      const_iterator end() { return cend(); };
       // Iterator methods
       const_iterator cbegin() const;
       const_iterator cend() const;
@@ -252,10 +252,11 @@ namespace gdwg {
 
 
       Graph();
-      Graph(typename std::vector<N>::const_iterator&, typename std::vector<N>::const_iterator&);
-      Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator&,
-          typename std::vector<std::tuple<N, N, E>>::const_iterator&
+      Graph(typename std::vector<N>::const_iterator, typename std::vector<N>::const_iterator);
+      Graph(typename std::vector<std::tuple<N, N, E>>::const_iterator,
+          typename std::vector<std::tuple<N, N, E>>::const_iterator
       );
+      Graph(std::initializer_list<N> l);
       Graph(const gdwg::Graph<N, E>& other) : g{other.g} {};
 
       gdwg::Graph<N,E>& operator=(const gdwg::Graph<N,E>& other) {
@@ -272,15 +273,19 @@ namespace gdwg {
       bool IsNode(const N&) const;
       void Clear();
       bool IsConnected(const N&, const N&) const;
+      std::vector<N> GetNodes() const;
       std::vector<N> GetConnected(const N&) const;
       std::vector<E> GetWeights(const N&, const N&) const;
       const_iterator find(const N&, const N&, const E&) const;
-      const_iterator erase(const N&, const N&, const E&);
-      const_iterator erase(gdwg::Graph<N,E>::const_iterator& it) {
-        // probs should do error checking here
-        auto val = *it;
-        return erase(std::get<0>(val), std::get<1>(val), std::get<2>(val));
+      bool erase(const N& to, const N& from, const E& e) {
+        auto it = find(to, from, e);
+        if (it == end()) {
+          return false;
+        }
+        erase(it);
+        return true;
       }
+      const_iterator erase(gdwg::Graph<N,E>::const_iterator it);
 
 
 
