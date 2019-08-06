@@ -104,6 +104,36 @@ bool gdwg::Graph<N, E>::DeleteNode(const N& node) {
   return true;
 }
 
+bool Replace(const N& oldData, const N& newData) {
+  shared_pointer_store<N> old_pointer = shared_pointer_store<N>(oldData);
+  shared_pointer_store<N> new_pointer = shared_pointer_store<N>(newData);
+  //Check that newData is not already a node in the graph
+  if (this->g.count(new_pointer) != 0) {
+    return false;
+  }
+  //Copy the outgoing edges from the old node
+  gdwg::AdjacencyList<N,E> l{this->g[old_pointer]};
+  //Set the outgoing edges for the new node to be the same as the edges from the old node
+  this->g[new_pointer] = l;
+  //Go through all other nodes in graph, copy ingoing edges to old node to ingoing edges to new
+  //node
+  for (auto& it : this->g) {
+    if (it == old_pointer || it == new_pointer) {
+      continue;
+    }
+    //If there is an edge from current node to old node
+    if (IsConnected(*it, oldData)) {
+      //Get the set of edge weights from current node to old node
+      std::set<shared_pointer_store<E>> edge_weights = this->g[it]->list[oldData];
+      this->g[it].erase(oldData);
+      //Make edges from current node to new node with the same edge weights
+      this->g[it]->list[newData] = edge_weights;
+    }
+  }
+  //Delete the old node, along with all incoming and outgoing edges
+  DeleteNode(oldData);
+}
+
 template<typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::find(const N& n1, const N& n2, const E& edge) const {
   gdwg::shared_pointer_store<N> tmp(n1);
